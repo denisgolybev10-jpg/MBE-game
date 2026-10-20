@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Голубиновка: Последний рубеж</title>
+<style>
+:root{--bg:#0e1215;--pn:#161c21;--pn2:#1d252b;--ln:#2b363e;--tx:#d9dee1;--mu:#8a98a3;--ac:#e2a63b;--rd:#d65a50;--gn:#5bb07a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:13px/1.4 system-ui,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+*{box-sizing:border-box}
+button{background:var(--pn2);color:var(--tx);border:1px solid var(--ln);padding:5px 10px;border-radius:3px;cursor:pointer;font:inherit}
+button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.4;cursor:default}button:focus-visible{outline:2px solid var(--ac)}
+button.pri{background:var(--ac);color:#1a1405;border-color:var(--ac);font-weight:600}button.on{border-color:var(--ac);color:var(--ac)}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.hide{display:none!important}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 8vw;background:linear-gradient(90deg,#0e1215 30%,rgba(14,18,21,.55));z-index:5}
+#menu h1{font:700 clamp(34px,7vw,76px)/1 Georgia,serif;letter-spacing:.06em;margin:0 0 4px}
+#menu p{color:var(--mu);margin:0 0 26px}#menu button{display:block;width:230px;margin:5px 0;padding:10px 14px;text-align:left;font-size:15px}
+#top{position:fixed;top:0;left:0;right:0;display:flex;gap:6px;align-items:center;padding:6px 10px;background:rgba(14,18,21,.92);border-bottom:1px solid var(--ln);z-index:3;flex-wrap:wrap}
+#top b{min-width:118px}.chip{background:var(--pn);border:1px solid var(--ln);padding:2px 8px;border-radius:3px;white-space:nowrap}
+#nav{position:fixed;top:44px;left:0;bottom:0;width:112px;display:flex;flex-direction:column;gap:3px;padding:6px;background:rgba(14,18,21,.85);z-index:3;overflow:auto}
+#nav button{text-align:left;padding:6px}
+#panel,#pinfo,#card{position:fixed;background:var(--pn);border:1px solid var(--ln);border-radius:4px;z-index:3;overflow:auto}
+#panel{top:50px;left:122px;width:min(560px,calc(100vw - 132px));max-height:calc(100vh - 62px);padding:12px}
+#pinfo{right:12px;bottom:10px;width:310px;max-height:44vh;padding:10px}
+#card{right:12px;top:60px;width:300px;padding:14px}
+#notes{position:fixed;right:10px;top:50px;width:270px;z-index:4;pointer-events:none}
+.nt{background:rgba(22,28,33,.96);border-left:3px solid var(--ac);padding:6px 9px;margin-bottom:5px;border-radius:2px}.nt.w{border-color:var(--rd)}.nt.g{border-color:var(--gn)}
+h3{margin:12px 0 6px;font-size:14px;color:var(--ac)}h2{margin:0 0 6px}
+table{width:100%;border-collapse:collapse}td,th{padding:3px 5px;border-bottom:1px solid var(--ln);text-align:left}th{color:var(--mu);font-weight:500}
+.flag{display:inline-block;width:22px;height:14px;border:1px solid #000;vertical-align:-2px;margin-right:6px}
+.mu{color:var(--mu)}.bar{height:5px;background:var(--ln);border-radius:3px;overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--ac)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}.x{float:right}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9}
+#modal>div{background:var(--pn);border:1px solid var(--ac);padding:18px;width:min(460px,92vw);border-radius:4px}#modal button{display:block;width:100%;margin:6px 0;text-align:left}
+.ftree{position:relative;margin:10px 0}.ftree svg{position:absolute;inset:0;width:100%;height:100%}.fn{position:absolute;height:52px;padding:4px 5px;font-size:11px;line-height:1.15;display:flex;flex-direction:column;justify-content:center;text-align:center;background:var(--pn2);border:1px solid var(--ln);border-radius:3px;cursor:pointer;overflow:hidden}.fn.lock{opacity:.45}.fn.ok{border-color:#d9dee1}.fn.act{border-color:var(--ac);color:var(--ac)}.fn.done{border-color:var(--gn);background:#1c2e24}.fn.sel{outline:2px solid var(--ac)}
+@media(max-width:700px){#nav{width:44px;font-size:0}#nav button{font-size:11px}#panel{left:52px}#notes{width:200px}}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="menu"><h1>ГОЛУБИНОВКА</h1><p>Последний рубеж · глобальная стратегия</p>
+<button class="pri" onclick="A.newGame()">Новая игра</button><button onclick="A.cont()">Продолжить</button><button onclick="A.loadMenu()">Загрузить игру</button><button onclick="A.settings()">Настройки</button><button onclick="A.about()">Об игре</button></div>
+<div id="top" class="hide"></div><div id="nav" class="hide"></div><div id="panel" class="hide"></div><div id="pinfo" class="hide"></div><div id="card" class="hide"></div><div id="notes"></div><div id="modal" class="hide"></div>
+<script>window.MAP={"w": 831, "h": 509, "cols": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"], "cities": [[593, 41, 67, 16], [634, 49, 16, 17], [619, 71, 17, 16], [448, 105, 8, 3], [125, 121, 60, 14], [430, 119, 16, 2], [160, 125, 9, 14], [272, 128, 21, 0], [440, 134, 30, 3], [407, 140, 36, 0], [308, 139, 13, 0], [462, 151, 49, 3], [97, 150, 15, 14], [430, 157, 18, 2], [506, 159, 9, 4], [530, 161, 38, 4], [597, 170, 66, 11], [425, 166, 48, 2], [230, 172, 11, 0], [274, 190, 37, 0], [382, 196, 24, 1], [579, 208, 57, 11], [483, 213, 44, 10], [413, 215, 70, 5], [579, 229, 9, 11], [304, 240, 25, 0], [622, 244, 21, 12], [327, 252, 9, 7], [437, 252, 8, 8], [522, 256, 72, 10], [372, 258, 8, 6], [392, 258, 33, 6], [342, 262, 31, 7], [286, 264, 12, 7], [595, 275, 65, 12], [336, 283, 14, 7], [492, 290, 43, 9], [397, 301, 129, 9], [546, 308, 27, 13], [536, 318, 54, 13], [446, 324, 13, 9], [641, 392, 10, 19], [632, 420, 69, 19], [620, 440, 20, 20], [623, 461, 55, 20], [543, 475, 23, 20]], "png": "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"};</script>
+<script>/* ======================================================================
+ world.config.js — ЕДИНЫЙ файл данных мира «Голубиновка».
+ Порядок стран фиксирован картой (id 0..20). Менять можно любые поля.
+ null = «посчитать автоматически» (по карте). Названия городов раздаются
+ по размеру жёлтых пятен: первая — столица (самое крупное пятно), далее по убыванию.
+ population: число жителей | industry: {civ,mil} | army: {inf,art,tnk} (стартовые дивизии в столице)
+ resources: стартовые запасы {iron,coal,oil,rubber,alu,chrome}
+ focusTree: null (общее дерево) или массив id фокусов / своих объектов {id,n,d,req,t,fx}
+ ====================================================================== */
+const WORLD={countries:[
+ {id:0,name:"Республика Голубиновка",color:'#3f48cc',capital:"Голубиновск",cities:["Североград", "Новогорск", "Заречный", "Белоярск"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:1,name:"Капибария",color:'#a48424',capital:"Капиград",cities:["Южный", "Лесной", "Октябрьск", "Берёзов"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:2,name:"Золотая Республика",color:'#ffc90e',capital:"Златоград",cities:["Северный", "Рудный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:3,name:"Котоляндия",color:'#76eeff',capital:"Котоград",cities:["Мяуград", "Приморск", "Восточный", "Лазурный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:4,name:"Серебрия",color:'#7092be',capital:"Сереброград",cities:["Верхний", "Каменный", "Северный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:5,name:"Лавандия",color:'#c17ff7',capital:"Лавандоград",cities:["Центральный", "Мирный", "Речной"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:6,name:"Розовия",color:'#f779cb',capital:"Розоград",cities:["Южный", "Цветочный", "Прибрежный", "Новый"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:7,name:"Зелёноландия",color:'#22b14c',capital:"Зелёноград",cities:["Лесоград", "Долинск"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:8,name:"Синегория",color:'#00a2e8',capital:"Синеград",cities:["Малый Синеград", "Озёрный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:9,name:"Республика Небесия",color:'#99d9ea',capital:"Небеск",cities:["Южноград", "Морской", "Степной", "Светлый"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:10,name:"Воронореспублика",color:'#de2020',capital:"Вороновск",cities:["Красноград", "Индустриальный", "Восточный", "Старый Ворон"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:11,name:"Фиолетовая Федерация",color:'#a349a4',capital:"Фиолетовск",cities:["Восточноград", "Рубежный", "Тихий"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:12,name:"Оранжевия",color:'#ff7f27',capital:"Оранжевск",cities:["Портовый", "Солнечный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:13,name:"Кальдос",color:'#a0a41e',capital:"Кальдоград",cities:["Южный Кальдос", "Речной", "Новый Кальдос", "Степной"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:14,name:"Республика Таури",color:'#c8a5ff',capital:"Тауроград",cities:["Порт Таури", "Северный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:15,name:"Котолдис",color:'#3fd17f',capital:"Котольск",cities:["Северный порт", "Лесной"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:16,name:"Республика Расхара",color:'#b97a57',capital:"Рашград",cities:["Центральный", "Порт Раш"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:17,name:"Индигония",color:'#6e4cc9',capital:"Индиград",cities:["Восточный порт", "Морской"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:18,name:"Капитолия",color:'#914590',capital:"Капитоград",cities:["Западный", "Портовый"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:19,name:"Лиловая Республика",color:'#c8bfe7',capital:"Лиловск",cities:["Северный", "Озёрный"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+ {id:20,name:"Хакилия",color:'#efe4b0',capital:"Хакиград",cities:["Южный порт", "Степной"],population:null,ideology:null,leader:null,stability:60,war_support:50,industry:null,resources:null,army:null,focusTree:null},
+]};
+</script>
+<script>/* ======================================================================
+ focus.config.js — национальные фокус-деревья (21 страна × 15 фокусов).
+ Формат строки:  Название | эффекты | [описание, необязательно]
+ Порядок строк = id узла 0..14; связи (prerequisites) задаются формой дерева (FOCUS_SHAPES):
+   число = обязательное условие, [a,b,c] = «достаточно любого из» (альтернативные пути).
+ Длительность = 25 + 8×глубина дней (+15 у финального).
+ Эффекты (через пробел, ключ:значение):
+   pp ПВ · st стабильность · ws воен.поддержка · cf гражд.фабрики · mf воен.заводы · dk верфи
+   man люди · eq оборудование · infra инфраструктура · fort:N@w|e|n|s|b укрепления (запад/восток/север/юг/граница)
+   проценты: rs исследования · atk атака · def оборона · bld стройка · prod производство · res добыча ресурсов
+             sup снабжение · tr скорость подготовки · art/tnk/air бонусы родов войск
+   rel:N отношения со всеми · r<id>:N отношения со страной id · claim:<id> претензия · core:<id> ядро
+   ideo:Название идеология · временные: tatk:25/120 tdef:25/120 tst:-10/150 (значение/дней)
+ ====================================================================== */
+const FOCUS_SHAPES={
+ A:[[],[0],[1],[1],[2,3],[0],[5],[6],[7],[0],[9],[10],[4,8],[8,11],[[11,12,13]]],
+ B:[[],[0],[1],[2],[0],[4],[5],[6],[0],[8],[9],[[7,10]],[11],[11],[[12,13]]],
+ C:[[],[],[0],[0],[2],[1],[5],[6],[3,4],[1],[9],[[7,10]],[8],[[11,12]],[13]]};
+const FOCUS_TREES={
+0:{shape:'A',list:`Укрепить государство|pp:80 st:5
+Государственная промышленная программа|cf:3
+Модернизация заводов|bld:20
+Развитие ВВР|mf:2 res:15 prod:5
+Голубиновская железная дорога|infra:3 sup:15
+Реформа вооружённых сил|atk:8 def:8
+Современная армия|tr:25 atk:4
+Мобилизационный резерв|man:60000 ws:5
+Укрепить западную границу|fort:3@w def:5
+Голубиновский дипломатический курс|rel:12 pp:30
+Союз с Капибарией|r1:45 pp:20
+Доктрина национальной безопасности|def:10 st:3
+Голубиновка должна выстоять|tatk:25/120 tdef:25/120 ws:10
+Экономика военного времени|mf:3 prod:10 tst:-10/150
+Великая Голубиновка|cf:2 mf:2 atk:6 def:6 st:8 pp:100 ideo:Великая_держава`},
+1:{shape:'A',list:`Капибарская промышленная программа|cf:3 bld:10
+Развитие торговли|res:15 pp:20
+Южные торговые пути|res:15 r6:15 r9:15
+Модернизация портов|dk:2 bld:10
+Новые предприятия|cf:2 mf:1 prod:8
+Капибарская армия|atk:6 man:30000
+Профессиональная армия|tr:25 atk:5
+Оборона границ|fort:3@b def:8
+Дипломатический баланс|rel:12 pp:30
+Союз с Голубиновкой|r0:45 pp:20
+Экономический блок|rel:10 prod:8 res:10
+Расширить экспорт|res:20 pp:30
+Капибария прежде всего|ws:8 st:5 def:5
+Мобилизация экономики|mf:3 prod:10 tst:-8/120
+Великая Капибария|cf:3 mf:2 res:20 st:8 pp:100`},
+2:{shape:'B',list:`Разработка месторождений|res:25
+Золотая промышленность|cf:2 prod:6
+Новые шахты|res:25 mf:1
+Развитие железных дорог|infra:3 sup:12
+Малая армия|man:20000 atk:4
+Пограничная оборона|fort:3@b def:8
+Горная пехота|def:10 tr:15
+Дипломатический нейтралитет|rel:15 st:4
+Торговый договор|res:12 pp:25
+Гарантии независимости|rel:15 pp:30
+Военная реформа|atk:6 def:6
+Общая мобилизация|man:40000 ws:8
+Экономика военного времени|mf:2 prod:10 tst:-8/120
+Последний рубеж|tdef:30/150 fort:2@b
+Золотая независимость|cf:2 mf:1 res:20 st:8 def:8 pp:80`},
+3:{shape:'C',list:`Развитие портов|dk:2 bld:10
+Котоляндский торговый флот|res:15 pp:20
+Морская промышленность|mf:1 prod:8
+Верфи Котограда|dk:2 mf:1
+Развитие побережья|cf:2 infra:2
+Морская пехота|atk:6 def:4
+Котоляндский флот|eq:6 tr:15
+Защита морских путей|def:8 fort:2@b
+Торговый договор|res:12 pp:25 rel:5
+Морской альянс|rel:12 pp:30
+Контроль проливов|atk:5 sup:10
+Модернизация флота|prod:10 rs:10
+Военная экономика|mf:2 prod:8 tst:-8/120
+Защитить Котоляндию|tdef:25/120 ws:8
+Котоляндская морская держава|cf:2 mf:2 dk:2 st:8 pp:100 atk:5`},
+4:{shape:'B',list:`Северная оборона|def:8 fort:2@n
+Пограничные укрепления|fort:3@b def:5
+Арктическая подготовка|def:8 sup:10
+Военная промышленность|mf:2 prod:6
+Мобилизация|man:40000 ws:6
+Северные гарнизоны|fort:2@n eq:6
+Профессиональная армия|tr:25 atk:5
+Военная разведка|rs:10 pp:30
+Договор с соседями|rel:12 st:3
+Оборонительный союз|rel:15 pp:30
+Защитить Серебрию|tdef:25/120 ws:8
+Военное производство|mf:2 prod:10
+Тотальная мобилизация|man:60000 tst:-10/120
+Последняя линия|fort:3@b tdef:30/150
+Серебряный щит|def:12 mf:1 cf:1 st:8 pp:80`},
+5:{shape:'C',list:`Политическая реформа|pp:60 st:4
+Стабилизировать правительство|st:8
+Национальное примирение|st:8 rel:8
+Экономическое восстановление|cf:2 bld:10
+Развитие столицы|cf:1 infra:2 pp:20
+Реформа армии|atk:5 def:5
+Новая армия|tr:20 man:20000
+Дипломатический нейтралитет|rel:15 st:3
+Поиск союзников|rel:12 pp:30
+Торговое соглашение|res:12 pp:25
+Укрепить границы|fort:3@b
+Чрезвычайное положение|st:6 pp:40 ws:5
+Военная мобилизация|man:35000 mf:1 tst:-8/120
+Защитить Лавандию|tdef:25/120 ws:8
+Новая Лавандия|cf:2 mf:1 st:12 pp:80 atk:4`},
+6:{shape:'C',list:`Модернизация сельского хозяйства|res:15 man:15000
+Развитие городов|cf:2 infra:2
+Новая промышленность|cf:2 prod:6
+Железнодорожная программа|infra:3 sup:12
+Продовольственная безопасность|st:6 ws:3
+Реформа армии|atk:5 def:4
+Пехотная доктрина|atk:6 tr:20
+Оборона юга|fort:3@s def:6
+Дипломатия соседей|rel:12 pp:30
+Торговый союз|res:12 rel:8
+Военная промышленность|mf:2 prod:8
+Мобилизация|man:35000 ws:6
+Экономика войны|mf:2 prod:10 tst:-8/120
+Национальное единство|st:10 ws:6
+Розовия вперёд|cf:2 mf:1 res:15 st:8 pp:80`},
+7:{shape:'B',list:`Лесная промышленность|res:20 cf:1
+Развитие регионов|cf:1 infra:2
+Дорожная программа|infra:3 sup:12
+Оборонительная доктрина|def:8 fort:2@b
+Лесные гарнизоны|def:10 fort:2@b
+Подготовка резервистов|man:25000 tr:15
+Развитие разведки|rs:10 pp:25
+Укрепить границы|fort:3@b
+Найти союзников|rel:12 pp:30
+Торговая политика|res:12 rel:6
+Национальная оборона|def:8 ws:6
+Мобилизация|man:35000
+Военное производство|mf:2 prod:8 tst:-8/120
+Последний лесной рубеж|tdef:30/150 fort:2@b
+Зелёноландия не сдаётся|def:12 mf:1 cf:1 st:8 pp:80`},
+8:{shape:'B',list:`Сохранить независимость|pp:60 st:5
+Малое государство|rel:10 st:4
+Укрепить столицу|fort:3@b def:8
+Пограничная гвардия|def:6 man:15000
+Подготовка резервов|man:20000 tr:15
+Скрытая мобилизация|man:20000 ws:4
+Военная разведка|rs:10 pp:25
+Договор о ненападении|rel:15 st:3
+Поиск великого союзника|rel:12 pp:30 r0:20
+Гарантии независимости|rel:15 pp:30
+Национальная оборона|def:10 ws:6
+Военная промышленность|mf:1 prod:8
+Общая мобилизация|man:35000 tst:-8/120
+Последний оплот|tdef:35/150 fort:2@b
+Синегория выстоит|def:12 cf:1 mf:1 st:10 pp:80`},
+9:{shape:'A',list:`Развитие юга|cf:2 bld:10
+Промышленный рывок|cf:3 prod:6
+Новые заводы|mf:2
+Развитие портов|dk:2 res:10
+Южная железная дорога|infra:3 sup:15
+Современная армия|atk:6 tr:20
+Механизация войск|tnk:15 eq:6
+Военная авиация|air:10 rs:5
+Укрепить границы|fort:3@b def:6
+Южный дипломатический блок|rel:12 pp:30
+Военный союз|rel:12 pp:30 ws:5
+Экономика войны|mf:3 prod:10 tst:-10/150
+Большая мобилизация|man:60000 ws:8
+Национальная доктрина|atk:6 def:6 st:5
+Небесия превыше всего|cf:3 mf:2 atk:6 st:8 pp:100 claim:6`},
+10:{shape:'A',list:`Сильное государство|pp:80 st:5
+Военная промышленность|mf:3 prod:6
+Милитаризация экономики|mf:2 prod:8 tst:-5/120
+Расширение армии|man:50000 atk:5
+Механизация|tnk:15 eq:8
+Артиллерийская доктрина|art:15 atk:4
+Военная авиация|air:10 rs:5
+Развитие разведки|rs:10 pp:30
+Укрепить восточную границу|fort:3@e def:6
+Воронья дипломатия|rel:10 pp:30
+Военный союз|rel:12 ws:6 pp:20
+Мобилизация|man:60000 ws:8
+Военная экономика|mf:3 prod:10 tst:-10/150
+Национальная доктрина|atk:8 def:6
+Вороновская держава|cf:2 mf:3 atk:8 st:8 pp:100 claim:3`},
+11:{shape:'A',list:`Федеральная реформа|pp:70 st:6
+Единая экономика|cf:2 prod:6
+Региональное развитие|cf:2 infra:2
+Федеральная армия|atk:5 man:30000
+Общие стандарты армии|tr:25 def:5
+Развитие промышленности|cf:2 mf:1 bld:10
+Инфраструктурная программа|infra:3 sup:15
+Разведывательная служба|rs:10 pp:25
+Дипломатический баланс|rel:12 pp:30
+Федеральный союз|rel:12 pp:25
+Защитить федерацию|def:8 fort:2@b
+Мобилизация|man:50000 ws:6
+Военная промышленность|mf:2 prod:8 tst:-8/120
+Единство федерации|st:10 ws:6
+Фиолетовая сила|cf:2 mf:2 atk:5 def:5 st:8 pp:100`},
+12:{shape:'C',list:`Развитие побережья|infra:2 cf:1
+Портовая экономика|dk:1 res:15
+Торговый флот|dk:1 pp:25
+Береговая оборона|fort:3@b def:6
+Морская промышленность|mf:1 prod:8
+Малая армия|man:15000 atk:4
+Пограничная служба|def:6 fort:1@b
+Дипломатия|rel:12 pp:25
+Торговый договор|res:12 pp:25
+Морской союз|rel:12 pp:30
+Защитить Оранжевию|tdef:25/120 ws:8
+Военная мобилизация|man:30000 tst:-8/120
+Военные верфи|dk:2 eq:6
+Последний порт|tdef:30/150 fort:2@b
+Свободная Оранжевия|cf:1 mf:1 dk:1 st:10 pp:80 def:8`},
+13:{shape:'A',list:`Развитие Кальдоса|pp:70 st:5
+Промышленный комплекс|cf:3 prod:5
+Новые города|cf:2 infra:2
+Развитие ресурсов|res:20 mf:1
+Железнодорожная программа|infra:3 sup:15
+Модернизация армии|atk:6 tr:20
+Кальдосская артиллерия|art:15 eq:6
+Бронетанковые войска|tnk:15 mf:1
+Военная авиация|air:10 rs:5
+Юго-восточная дипломатия|rel:12 pp:30
+Союз Кальдоса|rel:12 pp:20 r9:15
+Мобилизация|man:55000 ws:8
+Военная промышленность|mf:3 prod:10 tst:-10/150
+Национальное единство|st:10 ws:6
+Кальдосская держава|cf:2 mf:2 atk:6 st:8 pp:100 claim:9`},
+14:{shape:'C',list:`Островная экономика|cf:2 res:12
+Развитие портов|dk:2 bld:10
+Морская торговля|res:15 pp:25
+Островная оборона|def:8 fort:2@b
+Береговые укрепления|fort:3@b
+Морская пехота|atk:5 def:5
+Патрульный флот|eq:6 dk:1
+Дипломатическая изоляция|st:6 def:4
+Найти союзника|rel:12 pp:30
+Морской договор|rel:12 res:8
+Защитить остров|tdef:25/120 ws:8
+Военная мобилизация|man:30000 tst:-8/120
+Оборона столицы|fort:2@b def:8
+Последний рубеж Таури|tdef:30/150 fort:2@b
+Независимая Таури|cf:2 mf:1 dk:1 st:10 pp:80 def:8`},
+15:{shape:'B',list:`Развитие островов|cf:1 infra:2
+Порт Котольска|dk:2 res:12
+Морская торговля|res:15 pp:25
+Береговая оборона|fort:3@b def:6
+Островной гарнизон|def:8 man:15000
+Резервисты|man:20000 tr:15
+Разведка|rs:10 pp:25
+Договор с соседями|rel:12 st:3
+Поиск защитника|rel:12 pp:30
+Экономическая реформа|cf:1 bld:15
+Военная мобилизация|man:30000 ws:6
+Оборона архипелага|def:10 fort:2@b
+Последний остров|tdef:30/150 tst:-8/120
+Национальное единство|st:10 ws:6
+Котолдис выстоит|def:10 cf:1 mf:1 st:8 pp:80`},
+16:{shape:'C',list:`Развитие Рашграда|cf:2 infra:2
+Торговые пути|res:15 pp:25
+Порт Раш|dk:2 bld:10
+Расширение флота|eq:6 dk:1
+Морская промышленность|mf:1 prod:8
+Островная армия|atk:5 man:20000
+Морская пехота|atk:5 def:5
+Оборона архипелага|def:8 fort:3@b
+Дипломатия Расхары|rel:12 pp:30
+Торговый союз|res:12 rel:8
+Морской договор|rel:12 pp:25
+Военная мобилизация|man:35000 ws:6
+Экономика войны|mf:2 prod:10 tst:-8/120
+Защитить Расхару|tdef:25/120 ws:8
+Великая Расхара|cf:2 mf:1 dk:2 res:15 st:8 pp:80`},
+17:{shape:'C',list:`Восточный порт|dk:2 res:10
+Морская промышленность|mf:1 prod:8
+Строительство верфей|dk:2 bld:10
+Индигонский флот|eq:8 tr:15
+Морская авиация|air:10 rs:5
+Оборона островов|def:8 fort:3@b
+Морская пехота|atk:6 def:4
+Военная разведка|rs:10 pp:25
+Контроль морских путей|atk:5 sup:10
+Восточный союз|rel:12 pp:30
+Экономическая мобилизация|cf:1 mf:1 tst:-6/120
+Военное производство|mf:2 prod:10
+Морская доктрина|atk:6 def:6
+Защитить Индигонию|tdef:25/120 ws:8
+Великая морская держава|cf:2 mf:2 dk:2 st:8 pp:100 atk:5`},
+18:{shape:'B',list:`Восстановление Капитограда|pp:50 st:6 cf:1
+Развитие экономики|cf:2 bld:10
+Портовая программа|dk:2
+Островная промышленность|mf:1 prod:8
+Национальная гвардия|man:20000 def:6
+Оборона острова|def:8 fort:3@b
+Укрепить столицу|fort:2@b def:6
+Разведывательная служба|rs:10 pp:25
+Дипломатический нейтралитет|rel:15 st:4
+Гарантии независимости|rel:15 pp:30
+Военная мобилизация|man:30000 ws:6
+Оборонительная доктрина|def:10
+Последняя линия|tdef:30/150 fort:2@b
+Капитолия не сдаётся|ws:8 tst:-6/120
+Свободная Капитолия|cf:2 mf:1 st:10 pp:80 def:8`},
+19:{shape:'B',list:`Северная экономика|cf:1 res:12
+Развитие Озёрного|cf:1 infra:2
+Инфраструктура|infra:3 sup:10
+Оборона северной границы|fort:3@n def:6
+Пограничная гвардия|def:8 man:15000
+Подготовка резервов|man:20000 tr:15
+Разведка|rs:10 pp:25
+Дипломатический курс|rel:12 pp:25
+Союз с соседями|rel:12 pp:30
+Торговое соглашение|res:12 pp:25
+Военная промышленность|mf:1 prod:8
+Мобилизация|man:30000 ws:6
+Национальная оборона|def:10 fort:2@b
+Последний рубеж|tdef:30/150 tst:-8/120
+Лиловая Республика едина|cf:1 mf:1 st:10 pp:80 def:8`},
+20:{shape:'C',list:`Развитие юга|cf:2 infra:2
+Портовая экономика|dk:1 res:15
+Сельское хозяйство|res:15 man:15000
+Развитие Степного|cf:1 infra:2
+Береговая оборона|fort:3@b def:6
+Островная армия|atk:5 man:20000
+Морская пехота|atk:5 def:5
+Оборона побережья|def:8 fort:2@b
+Южный торговый договор|res:12 pp:25
+Поиск союзников|rel:12 pp:30
+Военная промышленность|mf:1 prod:8
+Мобилизация|man:30000 ws:6
+Экономика войны|mf:2 prod:10 tst:-8/120
+Защитить Хакилию|tdef:25/120 ws:8
+Свободная Хакилия|cf:1 mf:1 dk:1 st:10 pp:80 def:8`}};
+</script>
+<script>
+'use strict';
+/* ================= CONFIG: всё, что можно менять вручную ================= */
+const CFG={
+ start:Date.UTC(1991,0,1),
+ name:i=>CC[i].name,leader:i=>CC[i].leader||'—',ideology:i=>CC[i].ideology||'Нейтральная', // данные — в world.config.js
+ res:{iron:'Железо',coal:'Уголь',oil:'Нефть',rubber:'Каучук',alu:'Алюминий',chrome:'Хром'},
+ terrain:{plain:{n:'Равнина',d:1,a:1},forest:{n:'Лес',d:1.15,a:.9},hills:{n:'Холмы',d:1.25,a:.95},mount:{n:'Горы',d:1.6,a:.75}},
+ build:{cf:{n:'Гражданская фабрика',c:240,max:8},mf:{n:'Военный завод',c:300,max:8},dock:{n:'Верфь/порт',c:220,max:4,coast:1},inf:{n:'Инфраструктура',c:150,max:5},fort:{n:'Укрепления',c:140,max:5},air:{n:'Аэродром/ПВО',c:180,max:3}},
+ units:{inf:{n:'Пехота',eq:8,mp:1000},art:{n:'Артиллерия',eq:8,mp:800},tnk:{n:'Танки',eq:6,mp:600}},
+ lines:{inf:['Пехотное оружие',.5,{iron:.1}],art:['Артиллерия',.35,{iron:.15,coal:.1}],tnk:['Танки и грузовики',.25,{iron:.2,oil:.1,rubber:.05,chrome:.05}],air:['Самолёты',.15,{alu:.2,rubber:.05,oil:.05}],ship:['Корабли',.1,{iron:.3,chrome:.1,coal:.1}]},
+ techs:[
+  {id:'inf1',n:'Стрелковое оружие I',cat:'Пехотное оружие',d:60,req:[],fx:{atk:.08}},
+  {id:'inf2',n:'Стрелковое оружие II',cat:'Пехотное оружие',d:80,req:['inf1'],fx:{atk:.08,def:.06}},
+  {id:'art1',n:'Полевая артиллерия I',cat:'Артиллерия',d:70,req:[],fx:{art:.12}},
+  {id:'art2',n:'Полевая артиллерия II',cat:'Артиллерия',d:90,req:['art1'],fx:{art:.12}},
+  {id:'tnk1',n:'Лёгкие танки',cat:'Танки',d:90,req:[],fx:{tnk:.15}},
+  {id:'tnk2',n:'Основные танки',cat:'Танки',d:120,req:['tnk1'],fx:{tnk:.15}},
+  {id:'air1',n:'Истребители I',cat:'Авиация',d:80,req:[],fx:{air:.06}},
+  {id:'nav1',n:'Эсминцы I',cat:'Флот',d:80,req:[],fx:{ship:.15}},
+  {id:'ind1',n:'Конвейерное производство',cat:'Промышленность',d:70,req:[],fx:{build:.15}},
+  {id:'ind2',n:'Станкостроение',cat:'Промышленность',d:90,req:['ind1'],fx:{prod:.15}},
+  {id:'ele1',n:'Вычислительная техника',cat:'Электроника',d:70,req:[],fx:{rs:.15}},
+  {id:'log1',n:'Автотранспорт',cat:'Логистика',d:70,req:[],fx:{sup:.15}},
+  {id:'log2',n:'Полевые склады',cat:'Логистика',d:90,req:['log1'],fx:{sup:.15,def:.03}}],
+ focuses:[
+  {id:'eco',n:'Экономическая реформа',d:40,req:[],t:'+10% скорость стройки, +5 стабильности',fx:{stab:5,mod:{build:.1}}},
+  {id:'ind',n:'Развитие промышленности',d:60,req:['eco'],t:'+2 гражданские фабрики',fx:{cf:2}},
+  {id:'mil',n:'Военная реформа',d:40,req:[],t:'+5% атаки, +5 военной поддержки',fx:{supp:5,mod:{atk:.05}}},
+  {id:'mod',n:'Модернизация армии',d:60,req:['mil'],t:'+2 военных завода',fx:{mf:2}},
+  {id:'gov',n:'Усиление правительства',d:40,req:[],t:'+80 политической власти, +8 стабильности',fx:{pp:80,stab:8}},
+  {id:'dip',n:'Дипломатический путь',d:40,req:['gov'],t:'+15 отношений со всеми, +50 ПВ',fx:{pp:50,rel:15}},
+  {id:'peace',n:'Мирный путь',d:50,req:['dip'],t:'+10 стабильности, +10% скорость исследований',fx:{stab:10,mod:{rs:.1}}},
+  {id:'war',n:'Военный путь',d:50,req:['mod'],t:'+15 поддержки, +30 000 людей, +5% атаки',fx:{supp:15,man:30000,mod:{atk:.05}}}],
+ events:[
+  {t:'Экономический кризис',x:'Цены растут, заводы простаивают.',o:[['Стимулировать экономику (−40 ПВ)',{pp:-40,stab:3}],['Пережить кризис',{stab:-8}]]},
+  {t:'Протесты',x:'На улицах столицы собираются толпы.',o:[['Пойти на уступки',{stab:6,supp:-4}],['Подавить силой',{stab:-4,supp:5,pp:20}]]},
+  {t:'Торговый бум',x:'Экспорт растёт, склады наполняются.',o:[['Отлично!',{res:{iron:40,coal:40,oil:20}}]]},
+  {t:'Новая технология',x:'Инженеры предлагают прорывную разработку.',o:[['Профинансировать',{pp:-30,mod:{rs:.05}}],['Отложить',{pp:15}]]},
+  {t:'Политический кризис',x:'Парламент раскалывается.',o:[['Договориться (−30 ПВ)',{pp:-30,stab:5}],['Распустить парламент',{stab:-6,pp:40}]]},
+  {t:'Катастрофа',x:'Наводнение разрушило склады.',o:[['Вести восстановление',{pp:-20,res:{iron:-20}}],['Игнорировать',{stab:-5}]]}]};
+const FLD={cf:'civ',mf:'mil',dock:'dock',inf:'inf',fort:'fort',air:'air'};
+const MODS=['atk','def','art','tnk','air','ship','build','prod','rs','sup','res','tr'];
+const LAWS={draft:[['Добровольцы',1,0],['Расширенный призыв',1.5,-5],['Всеобщая мобилизация',2.2,-12]],eco:[['Гражданская',0,0,.1],['Ранняя мобилизация',.1,0,-.1],['Военная экономика',.25,-5,-.25]]};
+/* ================= УТИЛИТЫ ================= */
+const M=window.MAP,CC=WORLD.countries,W=M.w,H=M.h,NC=CC.length,SEA=65535,$=s=>document.querySelector(s);M.cols=CC.map(c=>c.color);const cityName=p=>p.cname||'Поселение '+(p.id+1);
+const focusesOf=c=>{const f=CC[c.i].focusTree;return f?f.map(x=>typeof x==='string'?CFG.focuses.find(y=>y.id===x):x).filter(Boolean):(FT[c.i]||CFG.focuses)};
+const reqOK=(c,f)=>f.req.every(r=>Array.isArray(r)?r.some(x=>c.fdone.includes(x)):c.fdone.includes(r));
+/* ===== Фокусы: разбор DSL эффектов и сборка деревьев из focus.config.js ===== */
+const FX_MOD={rs:'rs',atk:'atk',def:'def',bld:'build',prod:'prod',res:'res',sup:'sup',tr:'tr',art:'art',tnk:'tnk',air:'air'};
+const FX_LBL={pp:'Политическая власть',st:'Стабильность',ws:'Военная поддержка',cf:'Гражданские фабрики',mf:'Военные заводы',dk:'Верфи',man:'Людские ресурсы',eq:'Оборудование',rs:'Скорость исследований',atk:'Атака армии',def:'Оборона армии',bld:'Скорость строительства',prod:'Эффективность производства',res:'Добыча ресурсов',sup:'Снабжение',tr:'Скорость подготовки войск',art:'Артиллерия',tnk:'Танки',air:'Авиация',rel:'Отношения со всеми',infra:'Инфраструктура'};
+const FX_PCT=new Set(Object.keys(FX_MOD));
+function parseFx(s){const o={mod:{},rels:{},claims:[],cores:[],temps:[]};for(const t of s.split(/\s+/).filter(Boolean)){const[k,v]=t.split(':');
+ if(k[0]==='t'&&v.includes('/')){const[x,d]=v.split('/');o.temps.push({k:k==='tst'?'stab':FX_MOD[k.slice(1)],v:k==='tst'?+x:+x/100,d:+d});continue}
+ if(/^r\d+$/.test(k)){o.rels[+k.slice(1)]=+v;continue}
+ if(k==='claim'){o.claims.push(+v);continue}if(k==='core'){o.cores.push(+v);continue}if(k==='ideo'){o.ideo=v.replace(/_/g,' ');continue}
+ if(k==='fort'){const[n,d]=v.split('@');o.fort={n:+n,dir:d||'b'};continue}
+ if(FX_MOD[k]){o.mod[FX_MOD[k]]=+v/100;continue}
+ o[{st:'stab',ws:'supp'}[k]||k]=+v}return o}
+function describe(s){return s.split(/\s+/).filter(Boolean).map(t=>{const[k,v]=t.split(':'),sg=x=>(x>0?'+':'')+x;
+ if(k[0]==='t'&&v.includes('/')){const[x,d]=v.split('/');return'Временно ('+d+' дн.): '+(k==='tst'?'Стабильность '+sg(x):FX_LBL[k.slice(1)]+' '+sg(x)+'%')}
+ if(/^r\d+$/.test(k))return'Отношения с '+CC[+k.slice(1)].name+' '+sg(v);if(k==='claim')return'Претензия на '+CC[+v].name;if(k==='core')return'Ядро: '+CC[+v].name;if(k==='ideo')return'Идеология: '+v.replace(/_/g,' ');
+ if(k==='fort'){const[n,d]=v.split('@');return'Укрепления +'+n+({w:' (запад)',e:' (восток)',n:' (север)',s:' (юг)',b:' (граница)'}[d]||'')}
+ return FX_LBL[k]+' '+sg(v)+(FX_PCT.has(k)?'%':'')}).join(' · ')}
+function buildTrees(){return CC.map((cc,ci)=>{const t=FOCUS_TREES[ci];if(!t)return null;const sh=FOCUS_SHAPES[t.shape],rows=t.list.trim().split('\n').map(l=>l.split('|')),id=j=>'f'+ci+'_'+j;
+ const F=rows.map((r,i)=>({id:id(i),n:r[0].trim(),fx:r[1].trim(),desc:(r[2]||'').trim(),ri:sh[i],req:sh[i].map(q=>Array.isArray(q)?q.map(id):id(q))}));
+ F.forEach((f,i)=>{const fl=f.ri.flat();f.lvl=fl.length?Math.max(...fl.map(j=>F[j].lvl))+1:0});
+ const by={};F.forEach((f,i)=>{f.d=25+f.lvl*8+(i===14?15:0);f.t=describe(f.fx);(by[f.lvl]=by[f.lvl]||[]).push(f)});F.forEach(f=>{f.col=by[f.lvl].indexOf(f);f.nc=by[f.lvl].length});return F})}
+const FT=buildTrees();
+
+const mul=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e4?Math.round(n/1e3)+'k':Math.round(n);
+const rgb=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16)),dark=(h,k)=>'rgb('+rgb(h).map(v=>v*k|0)+')';
+const flag=i=>`<i class="flag" style="background:linear-gradient(${M.cols[i]} 60%,${dark(M.cols[i],.55)} 60%)"></i>`;
+let SND=true,AC=null;
+function sfx(k){if(!SND)return;try{AC=AC||new AudioContext();const T={click:[500,.04],open:[380,.06],note:[620,.08],war:[110,.35],cap:[300,.2],tech:[780,.2]}[k]||[400,.05],o=AC.createOscillator(),g=AC.createGain();o.frequency.value=T[0];o.type=k==='war'?'sawtooth':'sine';g.gain.value=.05;g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+T[1]);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+T[1])}catch(e){}}
+/* ================= КАРТА (статика) ================= */
+const CL=new Uint8Array(W*H),PV=new Uint16Array(W*H).fill(SEA),P=[],CAP=[];
+function buildMap(img){
+ const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,W,H).data;
+ const by=[...Array(NC)].map(()=>[]);for(let i=0;i<W*H;i++){CL[i]=d[i*4];if(CL[i]<NC)by[CL[i]].push(i)}
+ const r=mul(7),TR=Object.keys(CFG.terrain),RS=Object.keys(CFG.res);
+ for(let c=0;c<NC;c++){const px=by[c],k=Math.max(3,Math.min(20,Math.round(px.length/420)));
+  const sd=M.cities.filter(t=>t[3]===c).sort((a,b)=>b[2]-a[2]).slice(0,k).map(t=>({x:t[0],y:t[1],city:t})),sm=px.filter((_,i)=>i%7===0);
+  while(sd.length<k){let bb=null,bd=-1;for(const i of sm){const x=i%W,y=i/W|0;let m=1e9;for(const s of sd){const e=(s.x-x)**2+(s.y-y)**2;if(e<m)m=e}if(m>bd){bd=m;bb=[x,y]}}sd.push({x:bb[0],y:bb[1]})}
+  const b0=P.length;sd.forEach((s,j)=>P.push({id:b0+j,c0:c,x:s.x,y:s.y,city:s.city||null,adj:[],sea:[],px:[],coast:false,t:TR[r()<.5?0:1+(r()*3|0)],res:r()<.55?[RS[r()*6|0],1+(r()*3|0)]:null}));
+  for(const i of px){const x=i%W,y=i/W|0;let b=0,bd=1e9;for(let j=0;j<sd.length;j++){const e=(sd[j].x-x)**2+(sd[j].y-y)**2;if(e<bd){bd=e;b=j}}PV[i]=b0+b;P[b0+b].px.push(i)}
+  if(!P.slice(b0).some(p=>p.city)){const q=P.slice(b0).sort((a,b)=>b.px.length-a.px.length)[0];q.city=[q.x,q.y,12,c]}
+  let cp=P[b0];for(let j=b0;j<P.length;j++)if(P[j].city&&(!cp.city||P[j].city[2]>cp.city[2]))cp=P[j];CAP[c]=cp.id;const nm=[CC[c].capital,...CC[c].cities.filter(n=>n!==CC[c].capital)];P.slice(b0).filter(p=>p.city).sort((a,b)=>b.city[2]-a.city[2]).forEach((p,j)=>p.cname=nm[j]);}
+ let n=0;P.forEach(p=>{if(p.city)p.cn=n++});
+ const S=P.map(()=>new Set());
+ for(let i=0;i<W*H;i++){const a=PV[i];for(const j of [i+1,i+W]){if(j>=W*H||(j===i+1&&(i+1)%W===0))continue;const b=PV[j];if(a!==b){if(a===SEA)P[b].coast=true;else if(b===SEA)P[a].coast=true;else{S[a].add(b);S[b].add(a)}}}}
+ P.forEach((p,i)=>p.adj=[...S[i]]);
+ let lm=0;P.forEach(p=>p.lm=-1);P.forEach(p=>{if(p.lm<0){const q=[p];p.lm=lm;while(q.length){const u=q.pop();u.adj.forEach(v=>{if(P[v].lm<0){P[v].lm=lm;q.push(P[v])}})}lm++}});
+ P.forEach(p=>{if(!p.coast)return;P.filter(q=>q.coast&&q.lm!==p.lm).map(q=>[q,Math.hypot(q.x-p.x,q.y-p.y)]).filter(e=>e[1]<230).sort((a,b)=>a[1]-b[1]).slice(0,2).forEach(e=>{if(!p.sea.includes(e[0].id))p.sea.push(e[0].id);if(!e[0].sea.includes(p.id))e[0].sea.push(p.id)})});
+}
+/* ================= СОСТОЯНИЕ ИГРЫ ================= */
+let G=null,SELC=null,MODE='menu',view={z:1,x:0,y:0},HOV=-1,dirty=true,speedMs=[0,700,350,170,80,35];
+const me=()=>G.c[G.pi],atWar=(a,b)=>G.c[a].war.includes(b),allied=(a,b)=>a!==b&&G.c[a].al>=0&&G.c[a].al===G.c[b].al;
+const own=c=>P.filter(p=>p.o===c),nameOf=i=>G.c[i].name,links=(p,c)=>G.c[c].eq.ship>=1?p.adj.concat(p.sea):p.adj;
+function newState(){
+ const r=mul(99);
+ P.forEach(p=>{p.o=p.c0;p.civ=p.city?1+(r()<.5):(r()<.5?1:0);p.mil=r()<.4?1:0;p.dock=p.coast&&r()<.5?1:0;p.inf=1+(r()*3|0);p.fort=0;p.air=0;p.pop=Math.round((p.city?60+p.city[2]*3:20+r()*30)*1000)});
+ CC.forEach((cc,i)=>{const o=own(i);if(cc.population){const t=o.reduce((s,p)=>s+p.pop,0);o.forEach(p=>p.pop=Math.round(p.pop*cc.population/t))}if(cc.industry){const ord=o.slice().sort((a,b)=>(b.city?b.city[2]:0)-(a.city?a.city[2]:0));for(const [k,f] of [['civ','civ'],['mil','mil']])if(cc.industry[k]!=null){o.forEach(p=>p[f]=0);for(let j=0;j<cc.industry[k];j++)ord[j%ord.length][f]++}}});
+ G={day:0,pi:-1,paused:true,speed:1,c:[],armies:[],al:[],aid:1,gn:0,over:0,sa:null,sel:-1,tab:null,dt:0,war0:0};
+ for(let i=0;i<NC;i++){const cc=CC[i],o=own(i),c={i,name:cc.name,alive:true,ai:true,pp:100,stab:cc.stability??60,supp:cc.war_support??50,man:0,stock:{},eq:{inf:24,art:6,tnk:2,air:0,ship:0},lines:{},trainQ:[],buildQ:[],tech:[],rs:[],focus:null,fdone:[],war:[],rel:[],ws:{},al:-1,trade:[],laws:{draft:0,eco:0},fm:{},claims:[],cores:[],temps:[],ideo:null,loss:0,kills:0,n0:o.length,agr:.3+r()*.7,lastPeace:-99,m:{}};
+  for(const k in CFG.res)c.stock[k]=cc.resources&&cc.resources[k]!=null?cc.resources[k]:60;c.man=o.reduce((s,p)=>s+p.pop,0)*.03;G.c.push(c)}
+ G.c.forEach(c=>{for(let j=0;j<NC;j++)c.rel[j]=j===c.i?0:Math.round(r()*40-15);calc(c);autoLines(c);
+  if(CC[c.i].army){addArmy(c.i,CAP[c.i],CC[c.i].army);return}const o=own(c.i),k=Math.max(2,Math.round(o.length*1.2));for(let j=0;j<k;j++){const p=j===0?P[CAP[c.i]]:o[r()*o.length|0];addArmy(c.i,p.id,{inf:1,art:j%4===1?1:0,tnk:j%5===2?1:0})}});
+ G.c.forEach(c=>{const f=fac(c);c.cf=f.cf;c.mf=f.mf;c.dk=f.dk});
+}
+const fac=c=>{const o=own(c.i);return{cf:o.reduce((s,p)=>s+p.civ,0),mf:o.reduce((s,p)=>s+p.mil,0),dk:o.reduce((s,p)=>s+p.dock,0)}};
+function calc(c){const m={};MODS.forEach(k=>m[k]=0);c.tech.forEach(id=>{const t=CFG.techs.find(t=>t.id===id);for(const k in t.fx)m[k]+=t.fx[k]});for(const k in c.fm)m[k]+=c.fm[k];(c.temps||[]).forEach(t=>{if(t.k!=='stab')m[t.k]+=t.v});m.prod+=LAWS.eco[c.laws.eco][1];m.build+=LAWS.eco[c.laws.eco][3];c.m=m}
+function autoLines(c){const f=fac(c).mf,sh={inf:.45,art:.2,tnk:.25,air:.1,ship:0};let left=f;for(const k in sh){c.lines[k]=Math.floor(f*sh[k]);left-=c.lines[k]}c.lines.inf+=left;if(fac(c).dk>0&&f>=4){c.lines.inf--;c.lines.ship=1}}
+function applyFx(c,fx){if(fx.pp)c.pp+=fx.pp;if(fx.stab)c.stab=Math.max(0,Math.min(100,c.stab+fx.stab));if(fx.supp)c.supp=Math.max(0,Math.min(100,c.supp+fx.supp));if(fx.man)c.man+=fx.man;
+ for(const k of ['cf','mf']){const o=own(c.i);for(let j=0;j<(fx[k]||0);j++)o[Math.random()*o.length|0][k==='cf'?'civ':'mil']++}
+ if(fx.res)for(const k in fx.res)c.stock[k]=Math.max(0,c.stock[k]+fx.res[k]);if(fx.rel)G.c.forEach(o=>{if(o.i!==c.i){c.rel[o.i]=Math.min(100,c.rel[o.i]+fx.rel);o.rel[c.i]=Math.min(100,o.rel[c.i]+fx.rel)}});
+ if(fx.mod)for(const k in fx.mod)c.fm[k]=(c.fm[k]||0)+fx.mod[k];calc(c);autoLines(c)}
+function applyFocusFx(c,s){const o=parseFx(s);applyFx(c,{pp:o.pp,stab:o.stab,supp:o.supp,cf:o.cf,mf:o.mf,man:o.man,rel:o.rel,mod:o.mod});const ow=own(c.i);
+ if(o.dk){const co=ow.filter(p=>p.coast);for(let j=0;j<o.dk&&co.length;j++){const p=co[j%co.length];p.dock=Math.min(6,p.dock+1)}}
+ if(o.eq){c.eq.inf+=o.eq;c.eq.art+=o.eq/2}
+ if(o.fort){const b=ow.filter(p=>p.adj.some(v=>P[v].o!==c.i)||p.coast),L=(b.length?b:ow).slice(),so={w:(a,b)=>a.x-b.x,e:(a,b)=>b.x-a.x,n:(a,b)=>a.y-b.y,s:(a,b)=>b.y-a.y}[o.fort.dir];if(so)L.sort(so);for(let j=0;j<o.fort.n&&L.length;j++){const p=L[j%L.length];p.fort=Math.min(5,p.fort+1)}}
+ if(o.infra)for(let j=0;j<o.infra;j++){const p=ow[Math.random()*ow.length|0];p.inf=Math.min(5,p.inf+1)}
+ for(const k in o.rels){const t=G.c[+k];if(t&&t.alive&&t.i!==c.i){c.rel[t.i]=Math.min(100,c.rel[t.i]+o.rels[k]);t.rel[c.i]=Math.min(100,t.rel[c.i]+o.rels[k])}}
+ o.claims.forEach(x=>{if(!c.claims.includes(x))c.claims.push(x)});o.cores.forEach(x=>{if(!c.cores.includes(x))c.cores.push(x)});if(o.ideo)c.ideo=o.ideo;
+ o.temps.forEach(t=>c.temps.push({k:t.k,v:t.v,left:t.d}));calc(c);autoLines(c)}
+/* ================= АРМИИ ================= */
+const str=a=>a.inf+a.art+a.tnk;
+function addArmy(o,p,u){const e=G.armies.find(a=>a.o===o&&a.p===p&&a.tgt==null);if(e){e.inf+=u.inf||0;e.art+=u.art||0;e.tnk+=u.tnk||0;return e}
+ const r=Math.random,a={id:G.aid++,o,p,inf:u.inf||0,art:u.art||0,tnk:u.tnk||0,org:80,sup:1,tgt:null,prog:0,g:{n:'Генерал '+(++G.gn),l:1,xp:0,a:r()*3|0,d:r()*3|0}};G.armies.push(a);return a}
+function power(a,def){const c=G.c[a.o],m=c.m,k=def?m.def:m.atk,air=Math.min(.3,c.eq.air*.01+m.air),g=1+(def?a.g.d:a.g.a)*.04+a.g.l*.02;
+ return(a.inf*(def?1.1:1)*(1+k)+a.art*(def?1:1.7)*(1+k+m.art)+a.tnk*(def?1.4:2.8)*(1+k+m.tnk))*(.5+.5*a.sup)*(.6+a.org/250)*(1+air)*g*(c.stab<30?.85:1)*(1+(c.supp-50)/400)}
+const here=p=>G.armies.filter(a=>a.p===p);
+function setOwner(p,o,note){const old=P[p].o;P[p].o=o;paint();const q=G.c[old];q.buildQ=q.buildQ.filter(b=>b.p!==p);if(p===CAP[old])q.capLost=o;dirty=1;calcLabels();refreshAll();
+ if(note){const co=G.c[o];if(co.claims&&co.claims.includes(old))co.pp+=10;if(co.cores&&co.cores.includes(old))co.stab=Math.min(100,co.stab+2)}
+ if(note){if(o===G.pi)nt('Наши войска захватили '+(P[p].city?cityName(P[p]):'провинцию '+(p+1))+' ('+nameOf(old)+')','g');else if(old===G.pi)nt(nameOf(o)+' захватило нашу провинцию '+(p+1),'w');sfx('cap')}
+ if(note){const left=own(old).length;if(!left)die(old,o);else if(left<q.n0*.25||(q.capLost!=null&&left<q.n0*.6))capit(old,o)}}
+function die(i,by){const c=G.c[i];if(!c.alive)return;c.alive=false;G.armies=G.armies.filter(a=>a.o!==i);c.war.forEach(w=>{G.c[w].war=G.c[w].war.filter(x=>x!==i)});c.war=[];leave(i);nt(c.name+' уничтожено',G.pi===i?'w':'');if(i===G.pi)end('Поражение','Ваше государство прекратило существование.')}
+function capit(i,by){const c=G.c[i];if(!c.alive)return;const to=by;own(i).forEach(p=>{P[p.id].o=to});paint();nt(c.name+' капитулировало перед '+nameOf(to),'g');die(i,to);dirty=1;calcLabels()}
+function leave(i){const c=G.c[i];if(c.al<0)return;const a=G.al.find(x=>x.id===c.al);a.m=a.m.filter(x=>x!==i);if(a.lead===i)a.lead=a.m[0];if(a.m.length<2){a.m.forEach(x=>G.c[x].al=-1);a.m=[]}c.al=-1}
+function retreat(a){const o=G.c[a.o],q=P[a.p].adj.find(v=>(P[v].o===a.o||allied(P[v].o,a.o))&&!here(v).some(x=>atWar(x.o,a.o)));a.org=25;a.tgt=null;if(q==null){G.armies=G.armies.filter(x=>x!==a)}else{a.p=q;merge(a)}}
+function merge(a){const e=G.armies.find(x=>x!==a&&x.o===a.o&&x.p===a.p&&x.tgt==null);if(e&&a.tgt==null){e.inf+=a.inf;e.art+=a.art;e.tnk+=a.tnk;if(a.g.l>e.g.l)e.g=a.g;G.armies=G.armies.filter(x=>x!==a);return e}return a}
+function hit(a,f){const s=str(a);a.inf*=1-f;a.art*=1-f;a.tnk*=1-f;G.c[a.o].loss+=s*f}
+function battle(a,defs,p){const T=CFG.terrain[P[p].t],pa=power(a,0)*T.a,pd=defs.reduce((s,d)=>s+power(d,1),0)*T.d*(1+P[p].fort*.12)+.3,r=pa/pd,rr=Math.pow(r,.8),R=()=>.6+Math.random()*.8,
+  fd=Math.min(.45,.05*rr*R()),fa=Math.min(.45,.05/rr*R());
+ G.c[a.o].kills+=defs.reduce((s,d)=>s+str(d),0)*fd;hit(a,fa);defs.forEach(d=>{G.c[d.o].kills+=str(a)*fa;hit(d,fd);d.org-=3*r});a.org-=3/r;a.g.xp++;if(a.g.xp>40){a.g.xp=0;a.g.l++;a.g.a++}
+ defs.forEach(d=>{d.g.xp++;if(d.g.xp>40){d.g.xp=0;d.g.l++;d.g.d++}if(str(d)<.3)G.armies=G.armies.filter(x=>x!==d);else if(d.org<=0)retreat(d)});
+ if(str(a)<.3)G.armies=G.armies.filter(x=>x!==a);else if(a.org<=0||r<.4){a.tgt=null;a.org=Math.max(a.org,15)}
+ if(a.o===G.pi||defs.some(d=>d.o===G.pi))dirty=1}
+function armiesDay(){
+ for(const a of G.armies.slice()){if(!G.armies.includes(a))continue;const c=G.c[a.o],pr=P[a.p];
+  if(pr.o===a.o||allied(pr.o,a.o))a.sup=Math.min(1,a.sup+.1);else a.sup=Math.max(.25,a.sup-.03*(1-c.m.sup));
+  if(a.tgt==null){a.org=Math.min(100,a.org+3);continue}
+  const tp=P[a.tgt];if(!links(pr,a.o).includes(a.tgt)){a.tgt=null;continue}
+  if(tp.o===a.o||allied(tp.o,a.o)){a.org=Math.min(100,a.org+1);a.prog+=1/CFG.terrain[tp.t].a;if(a.prog>=2){a.p=a.tgt;a.tgt=null;a.prog=0;merge(a);dirty=1}}
+  else if(atWar(a.o,tp.o)){const d=here(a.tgt).filter(x=>atWar(x.o,a.o));
+   if(d.length)battle(a,d,a.tgt);else{a.prog+=1+(a.tnk/Math.max(1,str(a)))*.8+c.m.air;if(a.prog>=7){const t=a.tgt;a.p=t;a.tgt=null;a.prog=0;setOwner(t,a.o,true);merge(a);dirty=1}}}
+  else a.tgt=null;}
+}
+/* ================= ЭКОНОМИКА ================= */
+function sf(c){return c.stab<30?.7:c.stab>70?1.1:1}
+function econDay(c){
+ const f=fac(c);c.cf=f.cf;c.mf=f.mf;c.dk=f.dk;
+ const q=c.buildQ.slice(0,3);if(q.length){const rate=c.cf*(1+c.m.build)*sf(c)/q.length;q.forEach(b=>{b.left-=rate;if(b.left<=0){P[b.p][FLD[b.t]]++;c.buildQ=c.buildQ.filter(x=>x!==b);if(c.i===G.pi){nt('Строительство завершено: '+CFG.build[b.t].n+' (пров. '+(b.p+1)+')','g');sfx('note')}dirty=1}})}
+ c.rs.forEach(r=>{r.left-=(1+c.m.rs)*sf(c);if(r.left<=0){c.tech.push(r.id);calc(c);c.rs=c.rs.filter(x=>x!==r);if(c.i===G.pi){nt('Исследование завершено: '+CFG.techs.find(t=>t.id===r.id).n,'g');sfx('tech')}}});
+ if(c.focus){c.focus.left-=1;if(c.focus.left<=0){const fo=focusesOf(c).find(x=>x.id===c.focus.id);c.fdone.push(fo.id);typeof fo.fx==='string'?applyFocusFx(c,fo.fx):applyFx(c,fo.fx);if(c.i===G.pi){nt('Фокус завершён: '+fo.n,'g');sfx('tech')}c.focus=null}}
+ for(const k in c.lines){const L=CFG.lines[k];let fc=c.lines[k];if(k==='ship')fc=Math.min(fc,c.dk*3);if(!fc)continue;let q=1;for(const rk in L[2])q=Math.min(q,c.stock[rk]/(fc*L[1]*L[2][rk]+1e-9));q=Math.max(0,Math.min(1,q));
+  const out=fc*L[1]*(1+c.m.prod)*sf(c)*q;for(const rk in L[2])c.stock[rk]=Math.max(0,c.stock[rk]-out*L[2][rk]);c.eq[k]+=out*(k==='ship'?1:1)}
+ const pop=own(c.i).reduce((s,p)=>s+p.pop,0);c.man+=pop*.0002*LAWS.draft[c.laws.draft][1];c.pp+=.5+(c.focus?0:.1);
+ c.temps.forEach(t=>t.left--);if(c.temps.some(t=>t.left<=0)){c.temps=c.temps.filter(t=>t.left>0);calc(c)}
+ const ts=c.temps.filter(t=>t.k==='stab').reduce((s,t)=>s+t.v,0)+55+LAWS.draft[c.laws.draft][2]+LAWS.eco[c.laws.eco][2]+(c.fdone.includes('peace')?4:0);c.stab+=(ts-c.stab)*.02;c.supp+=((50+(c.war.length?-6:0)+(c.fdone.includes('war')?10:0))-c.supp)*.02;
+ c.stab=Math.max(0,Math.min(100,c.stab));c.supp=Math.max(0,Math.min(100,c.supp));
+ c.trainQ.forEach(t=>t.left--);c.trainQ.filter(t=>t.left<=0).forEach(t=>{const o=own(c.i);if(!o.length)return;const p=P[CAP[c.i]].o===c.i?CAP[c.i]:o[0].id;addArmy(c.i,p,{[t.t]:1});if(c.i===G.pi){nt('Дивизия обучена: '+CFG.units[t.t].n,'g');sfx('note')}});c.trainQ=c.trainQ.filter(t=>t.left>0);
+}
+function monthly(c){own(c.i).forEach(p=>{if(p.res)c.stock[p.res[0]]+=p.res[1]*6*(1+c.m.res);p.pop*=1.0015});
+ c.trade.forEach(o=>{if(G.c[o].alive&&!atWar(c.i,o)){const k=Object.keys(c.stock).sort((a,b)=>c.stock[a]-c.stock[b])[0];c.stock[k]+=12;c.rel[o]+=1}});c.trade=c.trade.filter(o=>G.c[o].alive&&!atWar(c.i,o))}
+function queueBuild(c,p,t){const B=CFG.build[t],pp=P[p];if(pp.o!==c.i)return'Это не ваша провинция';if(B.coast&&!pp.coast)return'Нужен выход к морю';if(pp[FLD[t]]+c.buildQ.filter(b=>b.p===p&&b.t===t).length>=B.max)return'Достигнут лимит';c.buildQ.push({p,t,left:B.c});return''}
+function startTrain(c,t){const u=CFG.units[t];if(c.eq[t]<u.eq)return'Не хватает оборудования ('+u.eq+')';if(c.man<u.mp)return'Не хватает людей ('+u.mp+')';c.eq[t]-=u.eq;c.man-=u.mp;c.trainQ.push({t,left:Math.max(5,Math.round(15*(1-Math.min(.6,c.m.tr))))});return''}
+/* ================= ДИПЛОМАТИЯ ================= */
+function declare(a,b){if(atWar(a,b)||allied(a,b)||!G.c[b].alive)return;join(a,b);if(G.c[a].claims.includes(b)){G.c[a].supp=Math.min(100,G.c[a].supp+10);nt(nameOf(a)+': война за претензии','')}G.war0++;nt(nameOf(a)+' объявило войну '+nameOf(b),(a===G.pi||b===G.pi)?'w':'');sfx('war');
+ [[a,b],[b,a]].forEach(([x,y])=>{const al=G.al.find(q=>q.id===G.c[x].al);if(al)al.m.forEach(m=>{if(m!==x&&!atWar(m,y)&&!allied(m,y)&&G.c[m].alive){join(m,y);nt(nameOf(m)+' вступило в войну на стороне '+nameOf(x),m===G.pi?'w':'')}})})}
+function join(a,b){G.c[a].war.push(b);G.c[b].war.push(a);G.c[a].ws[b]=G.c[b].ws[a]=G.day;G.c[a].rel[b]=G.c[b].rel[a]=-60}
+function makePeace(a,b){[[a,b],[b,a]].forEach(([x,y])=>{G.c[x].war=G.c[x].war.filter(v=>v!==y)});G.c[a].lastPeace=G.c[b].lastPeace=G.day;G.armies.forEach(x=>{if(x.tgt!=null&&!atWar(x.o,P[x.tgt].o)&&P[x.tgt].o!==x.o&&!allied(x.o,P[x.tgt].o))x.tgt=null});
+ G.armies.filter(x=>(x.o===a&&P[x.p].o===b)||(x.o===b&&P[x.p].o===a)).forEach(retreat);nt('Мир между '+nameOf(a)+' и '+nameOf(b),(a===G.pi||b===G.pi)?'g':'');
+ [[a,b],[b,a]].forEach(([x,y])=>{const al=G.al.find(q=>q.id===G.c[x].al);if(al)al.m.forEach(m=>{if(m!==x&&atWar(m,y))makePeace(m,y)})})}
+const taken=(a,b)=>P.filter(p=>p.c0===b&&p.o===a).length;
+function aiOK(b,a){const c=G.c[b],sc=taken(a,b)-taken(b,a);return sc>=1||c.supp<30||(G.day-c.ws[a]>50&&Math.random()<.4)}
+function makeAlliance(a,b){const A=G.c[a],B=G.c[b];if(B.al>=0)return'Государство уже в другом альянсе';if(A.war.some(w=>atWar(b,w)===false&&false))return'';
+ if(B.ai&&!(B.rel[a]>15))return'Отказ: слишком низкие отношения';if(A.al<0){const al={id:G.aid++,name:'Блок «'+A.name+'»',lead:a,m:[a]};G.al.push(al);A.al=al.id}
+ const al=G.al.find(q=>q.id===A.al);if(al.m.some(m=>atWar(m,b)||atWar(b,m)))return'Конфликт интересов';al.m.push(b);B.al=al.id;nt(B.name+' вступило в альянс '+al.name,'g');return''}
+const power0=c=>G.armies.filter(a=>a.o===c.i).reduce((s,a)=>s+str(a),0)*8+c.mf*3+c.cf+c.tech.length*2;
+const nbrs=c=>{const s=new Set();own(c.i).forEach(p=>links(p,c.i).forEach(q=>{if(P[q].o!==c.i)s.add(P[q].o)}));return[...s]};
+/* ================= ИИ ================= */
+function aiDay(c){const d=G.day,k=d+c.i;
+ if(k%4===0){if(c.rs.length<2){const av=CFG.techs.filter(t=>!c.tech.includes(t.id)&&!c.rs.some(r=>r.id===t.id)&&t.req.every(q=>c.tech.includes(q))).sort((a,b)=>a.d-b.d)[0];if(av)c.rs.push({id:av.id,left:av.d})}
+  if(!c.focus){const f=focusesOf(c).find(f=>!c.fdone.includes(f.id)&&reqOK(c,f));if(f)c.focus={id:f.id,left:f.d}}
+  if(c.buildQ.length<3){const o=own(c.i);if(o.length){const p=o[Math.random()*o.length|0],r=Math.random(),t=r<.35?'cf':r<.65?'mf':r<.8?'fort':r<.9?'inf':r<.95?'dock':'air';queueBuild(c,p.id,t)}}
+  if(c.trainQ.length<2)startTrain(c,['inf','inf','art','tnk'][Math.random()*4|0]);
+  if(c.war.length&&c.pp>=100&&c.laws.draft<1&&Math.random()<.2){c.pp-=100;c.laws.draft=1;calc(c)}
+  if(k%20===0)autoLines(c)}
+ if(k%2===0)aiArmies(c);
+ if(k%9===0)aiDip(c)}
+function aiArmies(c,only){const mine=G.armies.filter(a=>a.o===c.i&&(!only||only===1));
+ for(const a of mine){if(a.tgt!=null)continue;let best=null,bs=0;
+  for(const q of links(P[a.p],c.i)){if(!c.war.includes(P[q].o))continue;const dp=here(q).filter(x=>atWar(x.o,c.i)).reduce((s,x)=>s+power(x,1),0)*CFG.terrain[P[q].t].d*(1+P[q].fort*.12)+.5,s=power(a,0)*CFG.terrain[P[q].t].a/dp;if(s>bs){bs=s;best=q}}
+  if(best!=null&&bs>(a.o===G.pi?.5:.9)){a.tgt=best;a.prog=0;continue}
+  if(c.war.length&&Math.random()<.5||a.o===G.pi){const t=bfs(a.p,c);if(t!=null&&t!==a.p){a.tgt=t;a.prog=0}}
+  else if(Math.random()<.03){const o=own(c.i).filter(p=>p.adj.some(v=>P[v].o!==c.i));if(o.length){const t=bfs(a.p,c,o[Math.random()*o.length|0].id);if(t!=null){a.tgt=t;a.prog=0}}}}}
+function bfs(from,c,goal){const prev={[from]:-1},q=[from];while(q.length){const u=q.shift();const front=goal==null?links(P[u],c.i).some(v=>c.war.includes(P[v].o)):u===goal;if(front&&u!==from){let x=u;while(prev[x]!==from)x=prev[x];return x}
+  for(const v of links(P[u],c.i)){if(prev[v]===undefined&&(P[v].o===c.i||allied(P[v].o,c.i))){prev[v]=u;q.push(v)}}}return null}
+function aiDip(c){const d=G.day;
+ for(const w of c.war.slice()){const losing=taken(w,c.i)>taken(c.i,w)+1,wc=G.c[w];if(losing||c.supp<30||(d-c.ws[w]>150&&Math.random()<.2)){if(w===G.pi){if(d-(c.offer||-99)>60){c.offer=d;ask('Предложение мира',c.name+' предлагает прекратить войну.',[['Принять мир',()=>makePeace(c.i,w)],['Отклонить',()=>{}]])}}else if(aiOK(w,c.i)||losing)makePeace(c.i,w)}}
+ if(d>90&&c.war.length<1&&c.supp>35&&d-c.lastPeace>90&&G.c.filter(x=>x.war.length).length<6&&Math.random()<.05*c.agr){let best=null,br=1.8;for(const n of nbrs(c)){if(allied(c.i,n)||G.c[n].rel[c.i]>25)continue;const al=x=>G.al.find(q=>q.id===G.c[x].al),ps=x=>power0(G.c[x])+(al(x)?al(x).m.reduce((s,m)=>s+(m===x?0:power0(G.c[m])*.5),0):0),r=ps(c.i)/(ps(n)+1);if(r>br){br=r;best=n}}if(best!=null)declare(c.i,best)}
+ if(c.al<0&&Math.random()<.12){const n=nbrs(c).filter(x=>G.c[x].al<0&&c.rel[x]>20&&G.c[x].ai&&!atWar(c.i,x))[0];if(n!=null)makeAlliance(c.i,n)}
+ nbrs(c).forEach(n=>{if(!atWar(c.i,n)){c.rel[n]+=Math.random()<.5?1:-1;c.rel[n]=Math.max(-100,Math.min(100,c.rel[n]))}})}
+/* ================= ВРЕМЯ И СОБЫТИЯ ================= */
+function tick(){
+ G.day++;const d=new Date(CFG.start+G.day*864e5),first=d.getUTCDate()===1;
+ G.c.forEach(c=>{if(!c.alive)return;econDay(c);if(first)monthly(c);if(c.ai||c.i!==G.pi)aiDay(c);
+  if(Math.random()<(c.i===G.pi?.007:.003)){const e=CFG.events[Math.random()*CFG.events.length|0];if(c.i===G.pi)ask(e.t,e.x,e.o.map(o=>[o[0],()=>applyFx(c,o[1])]));else applyFx(c,e.o[0][1])}});
+ armiesDay();
+ if(first&&G.pi>=0)save('auto');
+ if(!G.over&&!G.won&&G.pi>=0&&me().alive&&own(G.pi).length>=P.length*.6){G.won=1;end('Победа','Ваше государство контролирует большую часть мира.')}
+
+ dirty=1;if(performance.now()-lastUI>400)ui()}
+let lastUI=0;let last=0,acc=0;
+function loop(t){requestAnimationFrame(loop);const dt=Math.min(300,t-last);last=t;
+ if(G&&MODE==='game'&&!G.paused&&!G.modal&&!G.over){acc+=dt;const ms=speedMs[G.speed];let n=0;while(acc>=ms&&n++<3){acc-=ms;tick()}}else acc=0;
+ if(dirty){dirty=0;draw()}}
+/* ================= ОТРИСОВКА КАРТЫ ================= */
+const cv=$('#cv'),ctx=cv.getContext('2d'),base=document.createElement('canvas'),hl=document.createElement('canvas');base.width=hl.width=W;base.height=hl.height=H;
+let labels=[];
+function paint(){const bx=base.getContext('2d'),im=bx.createImageData(W,H),o=im.data,col=P.map(p=>rgb(M.cols[G?p.o:p.c0]));
+ for(let i=0;i<W*H;i++){const p=PV[i],k=i*4;if(p===SEA){o[k]=14;o[k+1]=24;o[k+2]=33;o[k+3]=255;continue}
+  const c=col[p],sh=.9+(p%4)*.04;let f=sh,bd=0;
+  for(const j of [i+1,i-1,i+W,i-W]){const q=PV[j];if(j<0||j>=W*H||q===p)continue;if(q===SEA)bd=Math.max(bd,3);else bd=Math.max(bd,P[q].o!==P[p].o?3:1)}
+  if(bd===3){o[k]=o[k+1]=o[k+2]=12}else if(bd===1){o[k]=c[0]*.62;o[k+1]=c[1]*.62;o[k+2]=c[2]*.62}else{o[k]=c[0]*f;o[k+1]=c[1]*f;o[k+2]=c[2]*f}o[k+3]=255}
+ bx.putImageData(im,0,0)}
+function calcLabels(){labels=[];if(!G)return;for(let i=0;i<NC;i++){const o=own(i);if(!o.length)continue;const mx=o.reduce((s,p)=>s+p.x,0)/o.length,my=o.reduce((s,p)=>s+p.y,0)/o.length;let b=o[0];o.forEach(p=>{if(Math.hypot(p.x-mx,p.y-my)<Math.hypot(b.x-mx,b.y-my))b=p});labels.push([i,b.x,b.y])}}
+function updHL(){const x=hl.getContext('2d');x.clearRect(0,0,W,H);const f=(p,c)=>{x.fillStyle=c;P[p].px.forEach(i=>x.fillRect(i%W,i/W|0,1,1))};
+ if(G&&G.sa){const a=G.armies.find(q=>q.id===G.sa);if(a)links(P[a.p],a.o).forEach(q=>f(q,atWar(a.o,P[q].o)?'rgba(214,90,80,.5)':'rgba(91,176,122,.35)'))}
+ if(MODE==='select'&&SELC!=null)P.forEach(p=>{if(p.c0===SELC)f(p.id,'rgba(226,166,59,.3)')});
+ if(G&&G.sel>=0)f(G.sel,'rgba(226,166,59,.45)');if(HOV>=0)f(HOV,'rgba(255,255,255,.25)')}
+function draw(){updHL();const w=cv.width,h=cv.height;ctx.fillStyle='#0a0f13';ctx.fillRect(0,0,w,h);ctx.save();ctx.translate(view.x,view.y);ctx.scale(view.z,view.z);ctx.imageSmoothingEnabled=false;ctx.drawImage(base,0,0);ctx.drawImage(hl,0,0);ctx.restore();
+ const z=view.z,X=x=>x*z+view.x,Y=y=>y*z+view.y;ctx.textAlign='center';ctx.textBaseline='middle';
+ if(z>1.2)P.forEach(p=>{if(p.city){const s=p.id===CAP[p.c0]?5:3;ctx.fillStyle=p.id===CAP[p.c0]?'#fff':'#f5d442';ctx.fillRect(X(p.x)-s/2,Y(p.y)-s/2,s,s);if(z>3){ctx.font='10px system-ui';ctx.fillStyle='#fff';ctx.fillText(cityName(p),X(p.x),Y(p.y)+9)}}});
+ if(G&&MODE==='game'){const grp={};G.armies.forEach(a=>{(grp[a.p]=grp[a.p]||[]).push(a)});
+  G.armies.filter(a=>a.tgt!=null).forEach(a=>{ctx.strokeStyle=a.o===G.pi?'#e2a63b':'#d65a50';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(P[a.p].x),Y(P[a.p].y));ctx.lineTo(X(P[a.tgt].x),Y(P[a.tgt].y));ctx.stroke()});
+  for(const p in grp){const L=grp[p],pp=P[p],tot=L.reduce((s,a)=>s+str(a),0),o=L[0].o;const bx=X(pp.x)-9,by=Y(pp.y)-16;ctx.fillStyle=M.cols[o];ctx.fillRect(bx,by,22,12);ctx.strokeStyle=L.some(a=>a.id===G.sa)?'#fff':'#000';ctx.lineWidth=L.some(a=>a.id===G.sa)?2:1;ctx.strokeRect(bx,by,22,12);ctx.fillStyle='#000';ctx.font='bold 10px system-ui';ctx.fillText(tot<10?tot.toFixed(1):Math.round(tot),bx+11,by+6.5)}}
+ ctx.font='bold '+Math.max(10,Math.min(16,9+z*1.5))+'px system-ui';labels.forEach(([i,x,y])=>{const t=nameOf(i);ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.7)';ctx.strokeText(t,X(x),Y(y)+(z>1.5?14:0));ctx.fillStyle='#fff';ctx.fillText(t,X(x),Y(y)+(z>1.5?14:0))})}
+function fit(){cv.width=innerWidth;cv.height=innerHeight;const z=Math.min(cv.width/W,cv.height/H)*.9;if(!view.set){view.z=z;view.x=(cv.width-W*z)/2;view.y=(cv.height-H*z)/2+20;view.set=1}dirty=1}
+addEventListener('resize',fit);
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y,m:0};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'});
+cv.addEventListener('pointermove',e=>{if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4)drag.m=1;if(drag.m){view.x=drag.vx+dx;view.y=drag.vy+dy;dirty=1}return}const p=hit(e.clientX,e.clientY);if(p!==HOV){HOV=p;dirty=1}});
+cv.addEventListener('pointerup',e=>{cv.style.cursor='grab';if(drag&&!drag.m)click(hit(e.clientX,e.clientY));drag=null});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.2:1/1.2,e.clientX,e.clientY)},{passive:false});
+function zoom(f,cx,cy){cx=cx??cv.width/2;cy=cy??cv.height/2;const z=Math.max(.6,Math.min(14,view.z*f));f=z/view.z;view.x=cx-(cx-view.x)*f;view.y=cy-(cy-view.y)*f;view.z=z;dirty=1}
+function hit(sx,sy){const x=Math.floor((sx-view.x)/view.z),y=Math.floor((sy-view.y)/view.z);if(x<0||y<0||x>=W||y>=H)return-1;const p=PV[y*W+x];return p===SEA?-1:p}
+function click(p){sfx('click');if(MODE==='select'){if(p>=0){SELC=P[p].c0;card()}dirty=1;return}
+ if(MODE!=='game')return;
+ if(G.sa&&p>=0){const a=G.armies.find(q=>q.id===G.sa);if(a&&a.o===G.pi&&links(P[a.p],a.o).includes(p)){if(P[p].o===a.o||allied(P[p].o,a.o)||atWar(a.o,P[p].o)){a.tgt=p;a.prog=0;nt('Приказ: армия → провинция '+(p+1)+(atWar(a.o,P[p].o)?' (атака)':''));ui();dirty=1;return}else nt('Нельзя войти в чужую провинцию без войны','w')}}
+ G.sel=p;if(p<0)G.sa=null;ui();dirty=1}
+/* ================= UI ================= */
+function nt(t,k){const d=document.createElement('div');d.className='nt '+(k||'');d.textContent=t;const n=$('#notes');n.prepend(d);while(n.children.length>7)n.lastChild.remove();setTimeout(()=>d.remove(),14000);if(k==='w')sfx('note')}
+function ask(title,text,opts){G.modal=1;sfx('open');const m=$('#modal');m.classList.remove('hide');m.innerHTML=`<div><h2>${title}</h2><p>${text}</p>${opts.map((o,i)=>`<button data-i="${i}">${o[0]}</button>`).join('')}</div>`;m.querySelectorAll('button').forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.i];m.classList.add('hide');G.modal=0;sfx('click');o[1]&&o[1]();refreshAll();ui();dirty=1})}
+function end(t,x){G.over=1;ask(t,x,[['В главное меню',()=>A.toMenu()],['Продолжить наблюдение',()=>{G.over=0}]])}
+const TABS=[['country','Страна'],['eco','Экономика'],['prod','Производство'],['build','Строительство'],['army','Армия'],['res','Исследования'],['focus','Фокусы'],['dip','Дипломатия'],['stats','Статистика'],['world','Мир'],['menu','Меню']];
+const bar=(v,max)=>`<div class="bar"><i style="width:${Math.max(0,Math.min(100,v/max*100))}%"></i></div>`;
+function ui(){if(MODE!=='game'||!G)return;lastUI=performance.now();const c=me(),d=new Date(CFG.start+G.day*864e5),tot=Object.values(c.stock).reduce((s,v)=>s+v,0);
+ $('#top').innerHTML=`<button onclick="A.tab('menu')">☰</button><b>${d.getUTCDate()} ${['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][d.getUTCMonth()]} ${d.getUTCFullYear()}</b><button class="${G.paused?'on':''}" onclick="A.pause()">${G.paused?'▶ Пауза':'⏸'}</button>${[1,2,3,4,5].map(n=>`<button class="${G.speed===n?'on':''}" onclick="A.speed(${n})">${n}x</button>`).join('')}
+ <span class="chip" title="Политическая власть">⚖ ${Math.floor(c.pp)}</span><span class="chip" title="Стабильность">🛡 ${Math.round(c.stab)}%</span><span class="chip" title="Военная поддержка">★ ${Math.round(c.supp)}%</span><span class="chip" title="Людские резервы">👥 ${fmt(c.man)}</span><span class="chip" title="Гражд./воен. фабрики">🏭 ${fac(c).cf}/${fac(c).mf}</span><span class="chip" title="${Object.keys(CFG.res).map(k=>CFG.res[k]+': '+Math.round(c.stock[k])).join(', ')}">⛏ ${fmt(tot)}</span><span class="chip">${flag(G.pi)}${c.name}</span><button onclick="zoom(1.3)">+</button><button onclick="zoom(1/1.3)">−</button>`;
+ $('#nav').innerHTML=TABS.map(t=>`<button class="${G.tab===t[0]?'on':''}" onclick="A.tab('${t[0]}')">${t[1]}</button>`).join('');
+ const pn=$('#panel'),st=pn.scrollTop;if(G.tab){pn.classList.remove('hide');pn.innerHTML=`<button class="x" onclick="A.tab(null)">✕</button>`+(PN[G.tab]?PN[G.tab]():'');pn.scrollTop=st}else pn.classList.add('hide');
+ const pi=$('#pinfo');if(G.sel>=0){pi.classList.remove('hide');pi.innerHTML=provInfo(G.sel)}else pi.classList.add('hide')}
+function provInfo(id){const p=P[id],o=G.c[p.o],mine=p.o===G.pi,T=CFG.terrain[p.t],ar=here(id);
+ return`<button class="x" onclick="A.sel(-1)">✕</button><h2>${flag(p.o)}${p.city?cityName(p)+(id===CAP[p.c0]?' ★':''):'Провинция '+(id+1)}</h2><div class="mu">${o.name}${me().claims&&me().claims.includes(p.o)?' · претензия':''}${p.o!==p.c0?' (бывш. '+nameOf(p.c0)+')':''} · ${T.n}${p.coast?' · побережье':''}</div>
+ <div>Население: ${fmt(p.pop)} · Инфра ${p.inf} · Форт ${p.fort}</div><div>Фабрики ${p.civ} · Заводы ${p.mil} · Верфи ${p.dock} · Аэродромы ${p.air}</div><div>Ресурс: ${p.res?CFG.res[p.res[0]]+' ×'+p.res[1]:'—'}</div>
+ ${ar.length?'<h3>Армии</h3>'+ar.map(a=>`<div class="row"><span style="color:${M.cols[a.o]}">■</span> ${nameOf(a.o)}: ${str(a).toFixed(1)} див. · орг ${Math.round(a.org)} · снаб ${Math.round(a.sup*100)}%${a.o===G.pi?` <button class="${G.sa===a.id?'on':''}" onclick="A.selA(${a.id})">${G.sa===a.id?'Выбрана':'Выбрать'}</button>`:''}</div>`).join(''):''}
+ ${G.sa&&ar.some(a=>a.id===G.sa)?'<div class="mu">Кликните по соседней провинции (зелёная — перемещение, красная — атака)</div>':''}
+ <div class="row">${mine?`<button onclick="A.tab('build')">Строить</button>`:`<button onclick="A.dtab(${p.o})">Дипломатия</button>`}</div>`}
+const PN={
+ country(){const c=me(),o=own(G.pi);return`<h2>${flag(G.pi)}${c.name}</h2><div class="mu">Глава: ${CFG.leader(G.pi)} · Идеология: ${me().ideo||CFG.ideology(G.pi)}</div><table><tr><td>Столица</td><td>${P[CAP[G.pi]].o===G.pi?cityName(P[CAP[G.pi]]):'<span style="color:var(--rd)">потеряна</span>'}</td></tr><tr><td>Провинции</td><td>${o.length} / ${c.n0}</td></tr><tr><td>Население</td><td>${fmt(o.reduce((s,p)=>s+p.pop,0))}</td></tr><tr><td>Стабильность</td><td>${Math.round(c.stab)}% ${bar(c.stab,100)}</td></tr><tr><td>Военная поддержка</td><td>${Math.round(c.supp)}% ${bar(c.supp,100)}</td></tr><tr><td>Политическая власть</td><td>${c.pp.toFixed(0)} (+0.5/день)</td></tr><tr><td>Альянс</td><td>${c.al>=0?G.al.find(a=>a.id===c.al).name:'—'}</td></tr></table>
+ <h3>Законы (100 ПВ)</h3>${['draft','eco'].map(k=>`<div class="row"><span class="mu">${k==='draft'?'Призыв':'Экономика'}:</span>${LAWS[k].map((l,i)=>`<button class="${c.laws[k]===i?'on':''}" onclick="A.law('${k}',${i})">${l[0]}</button>`).join('')}</div>`).join('')}
+ ${c.al>=0?'<div class="row"><button onclick="A.leave()">Выйти из альянса</button></div>':''}`},
+ eco(){const c=me();return`<h2>Экономика</h2><table><tr><td>Гражданские фабрики</td><td>${c.cf}</td></tr><tr><td>Военные заводы</td><td>${c.mf}</td></tr><tr><td>Верфи</td><td>${c.dk}</td></tr><tr><td>Людские резервы</td><td>${fmt(c.man)}</td></tr></table><h3>Ресурсы</h3><table>${Object.keys(CFG.res).map(k=>`<tr><td>${CFG.res[k]}</td><td>${Math.round(c.stock[k])}</td><td>+${own(G.pi).reduce((s,p)=>s+(p.res&&p.res[0]===k?p.res[1]*6:0),0)}/мес</td></tr>`).join('')}</table>
+ <h3>Оборудование</h3><table>${Object.keys(c.eq).map(k=>`<tr><td>${CFG.lines[k][0]}</td><td>${c.eq[k].toFixed(1)}</td></tr>`).join('')}</table><div class="mu">Торговых соглашений: ${c.trade.length} (заключаются в «Дипломатии»)</div>`},
+ prod(){const c=me(),used=Object.values(c.lines).reduce((s,v)=>s+v,0);return`<h2>Производство</h2><div>Заводов: ${c.mf} · назначено ${used}</div><table>${Object.keys(CFG.lines).map(k=>`<tr><td>${CFG.lines[k][0]}</td><td><button onclick="A.line('${k}',-1)">−</button> ${c.lines[k]} <button onclick="A.line('${k}',1)">+</button></td><td>${c.eq[k].toFixed(1)}</td><td class="mu">${Object.keys(CFG.lines[k][2]).map(r=>CFG.res[r]).join(', ')}</td></tr>`).join('')}</table><div class="mu">Нехватка ресурсов снижает выпуск. Верфи нужны для кораблей.</div>
+ <h3>Обучение дивизий</h3><div class="row">${Object.keys(CFG.units).map(k=>`<button onclick="A.train('${k}')">${CFG.units[k].n} (${CFG.units[k].eq} об., ${CFG.units[k].mp} чел.)</button>`).join('')}</div><div class="mu">В обучении: ${c.trainQ.map(t=>CFG.units[t.t].n+' '+t.left+'д').join(', ')||'—'}</div>`},
+ build(){const c=me(),p=G.sel>=0?P[G.sel]:null,q=c.buildQ;return`<h2>Строительство</h2><div>${p&&p.o===G.pi?'Выбрана провинция '+(p.id+1)+(p.city?' ('+cityName(p)+')':''):'Кликните по своей провинции на карте'}</div><div class="row">${p&&p.o===G.pi?Object.keys(CFG.build).map(k=>`<button onclick="A.build('${k}')">${CFG.build[k].n} (${CFG.build[k].c})</button>`).join(''):''}</div><h3>Очередь (первые 3 строятся, ${c.cf} фабрик)</h3><table>${q.map((b,i)=>`<tr><td>${CFG.build[b.t].n}</td><td>пров. ${b.p+1}</td><td>${bar(CFG.build[b.t].c-b.left,CFG.build[b.t].c)}</td><td><button onclick="A.unq(${i})">✕</button></td></tr>`).join('')||'<tr><td class="mu">Пусто</td></tr>'}</table>`},
+ army(){const c=me(),l=G.armies.filter(a=>a.o===G.pi);return`<h2>Армия</h2><div>Дивизий: ${l.reduce((s,a)=>s+str(a),0).toFixed(1)} · Флот: ${Math.floor(c.eq.ship)} · Потери: ${Math.round(c.loss)} · Убито: ${Math.round(c.kills)}</div><div class="row"><button onclick="A.front(0)">Наступление (авто-фронт)</button><button onclick="A.front(1)">Оборона (стоп)</button></div><table><tr><th>Пров.</th><th>Пех/Арт/Тнк</th><th>Орг</th><th>Снаб</th><th>Генерал</th><th></th></tr>${l.map(a=>`<tr><td>${a.p+1}</td><td>${a.inf.toFixed(1)}/${a.art.toFixed(1)}/${a.tnk.toFixed(1)}</td><td>${Math.round(a.org)}</td><td>${Math.round(a.sup*100)}%</td><td>${a.g.n} ур.${a.g.l} (${a.g.a}/${a.g.d})</td><td><button class="${G.sa===a.id?'on':''}" onclick="A.selA(${a.id},1)">▶</button></td></tr>`).join('')}</table><div class="mu">Выберите армию, затем кликните по соседней провинции. Через море нужен хотя бы 1 корабль.</div>`},
+ res(){const c=me(),cats=[...new Set(CFG.techs.map(t=>t.cat))];return`<h2>Исследования</h2><div class="mu">Слоты: ${c.rs.length}/2 · ${c.rs.map(r=>CFG.techs.find(t=>t.id===r.id).n+' ('+Math.ceil(r.left)+'д)').join(', ')||'свободно'}</div>${cats.map(k=>`<h3>${k}</h3>`+CFG.techs.filter(t=>t.cat===k).map(t=>{const done=c.tech.includes(t.id),act=c.rs.find(r=>r.id===t.id),ok=t.req.every(q=>c.tech.includes(q));return`<div class="row"><button ${done||act||!ok||c.rs.length>=2?'disabled':''} onclick="A.research('${t.id}')">${t.n}</button><span class="mu">${done?'✔ изучено':act?'идёт…':t.d+' дн.'+(t.req.length?' · нужно: '+t.req.map(q=>CFG.techs.find(x=>x.id===q).n).join(', '):'')}</span></div>`}).join('')).join('')}`},
+ focus(){const c=me(),T=focusesOf(c),act=c.focus&&T.find(f=>f.id===c.focus.id),sel=T.find(f=>f.id===G.fsel),stt=f=>c.fdone.includes(f.id)?'done':act&&act.id===f.id?'act':reqOK(c,f)?'ok':'lock',rows=Math.max(...T.map(f=>f.lvl||0))+1,ix=id=>T.findIndex(f=>f.id===id),X=f=>(f.col+.5)/f.nc*100,nm=id=>T.find(x=>x.id===id).n;
+ const lines=T.map(f=>f.req.flat?f.req.map(r=>(Array.isArray(r)?r:[r]).map(j=>{const g=T[ix(j)];return`<line x1="${X(g)}" y1="${g.lvl*80+52}" x2="${X(f)}" y2="${f.lvl*80}" stroke="${Array.isArray(r)?'#8a98a3':'#e2a63b'}" stroke-width="1.5" ${Array.isArray(r)?'stroke-dasharray="4 3"':''} vector-effect="non-scaling-stroke"/>`}).join('')).join(''):'').join('');
+ return`<h2>Национальные фокусы</h2>${act?`<div><b>${act.n}</b> · осталось ${c.focus.left} дн. из ${act.d}</div>${bar(act.d-c.focus.left,act.d)}<div class="mu">${act.t}</div>`:'<div class="mu">Фокус не выбран — выберите узел дерева</div>'}
+ <div class="ftree" style="height:${rows*80}px"><svg viewBox="0 0 100 ${rows*80}" preserveAspectRatio="none">${lines}</svg>${T.map(f=>{const w=Math.min(23,92/f.nc);return`<div class="fn ${stt(f)} ${G.fsel===f.id?'sel':''}" style="left:${X(f)-w/2}%;width:${w}%;top:${f.lvl*80}px" onclick="A.fsel('${f.id}')">${f.n}${stt(f)==='act'?bar(act.d-c.focus.left,act.d):''}</div>`}).join('')}</div>
+ ${sel?`<h3>${sel.n}</h3><div>${sel.desc||'Эффекты: '+sel.t}</div><div class="mu">Длительность: ${sel.d} дн. · Требуется: ${sel.req.length?sel.req.map(r=>Array.isArray(r)?'любой из ('+r.map(nm).join(' / ')+')':nm(r)).join('; '):'—'}</div><div>${sel.t}</div><div class="row"><button class="pri" ${stt(sel)==='ok'&&!c.focus?'':'disabled'} onclick="A.focus('${sel.id}')">${stt(sel)==='done'?'Завершён':stt(sel)==='act'?'Выполняется':stt(sel)==='lock'?'Недоступен':c.focus?'Другой фокус выполняется':'Начать фокус'}</button></div>`:''}
+ <div class="mu">Зелёное — завершено · янтарное — идёт · светлое — доступно · тусклое — закрыто. Пунктир — «любой из».</div>`},
+ dip(){const c=me(),t=G.dt,o=G.c[t];return`<h2>Дипломатия</h2><table><tr><th>Страна</th><th>Отн.</th><th>Статус</th></tr>${G.c.filter(x=>x.alive&&x.i!==G.pi).map(x=>`<tr onclick="A.dtab(${x.i})" style="cursor:pointer;${x.i===t?'background:var(--pn2)':''}"><td>${flag(x.i)}${x.name}</td><td>${c.rel[x.i]}</td><td>${atWar(G.pi,x.i)?'<span style="color:var(--rd)">война</span>':allied(G.pi,x.i)?'союзник':c.trade.includes(x.i)?'торговля':''}</td></tr>`).join('')}</table>
+ ${o&&o.alive&&t!==G.pi?`<h3>${o.name}</h3><div class="mu">Сила: ${Math.round(power0(o))} (ваша ${Math.round(power0(c))}) · ПВ у вас: ${Math.floor(c.pp)}</div><div class="row">${Object.keys(DIP).filter(k=>DIP[k].ok(G.pi,t)).map(k=>`<button onclick="A.dip('${k}')">${DIP[k].n}${DIP[k].c?' ('+DIP[k].c+' ПВ)':''}</button>`).join('')}</div>`:'<div class="mu">Выберите страну в списке или на карте</div>'}`},
+ stats(){const sc=c=>own(c.i).length*3+c.cf*4+c.mf*5+G.armies.filter(a=>a.o===c.i).reduce((s,a)=>s+str(a),0)*6+c.tech.length*2;const l=G.c.filter(c=>c.alive).map(c=>({c,sc:sc(c)})).sort((a,b)=>b.sc-a.sc);return`<h2>Статистика</h2><table><tr><th>#</th><th>Страна</th><th>Пров.</th><th>Нас.</th><th>ГФ/ВЗ</th><th>Див.</th><th>Потери</th><th>Очки</th></tr>${l.map((e,i)=>{const c=e.c,o=own(c.i);return`<tr style="${c.i===G.pi?'color:var(--ac)':''}"><td>${i+1}</td><td>${flag(c.i)}${c.name}</td><td>${o.length}</td><td>${fmt(o.reduce((s,p)=>s+p.pop,0))}</td><td>${fac(c).cf}/${fac(c).mf}</td><td>${G.armies.filter(a=>a.o===c.i).reduce((s,a)=>s+str(a),0).toFixed(0)}</td><td>${Math.round(c.loss)}</td><td>${Math.round(e.sc)}</td></tr>`}).join('')}</table><div class="mu">Мировые державы: ${l.slice(0,3).map(e=>e.c.name).join(', ')}</div>`},
+ world(){const ws=[];G.c.forEach(a=>a.war.forEach(b=>{if(a.i<b)ws.push([a.i,b])}));return`<h2>Мировая ситуация</h2><h3>Войны (${ws.length})</h3>${ws.map(w=>`<div>${flag(w[0])}${nameOf(w[0])} ⚔ ${flag(w[1])}${nameOf(w[1])} <span class="mu">захвачено ${taken(w[0],w[1])}:${taken(w[1],w[0])}</span></div>`).join('')||'<div class="mu">Мир</div>'}<h3>Альянсы</h3>${G.al.filter(a=>a.m.length).map(a=>`<div><b>${a.name}</b> — ${a.m.map(m=>flag(m)+nameOf(m)).join(', ')}</div>`).join('')||'<div class="mu">Нет</div>'}`},
+ menu(){return`<h2>Меню</h2><div class="row"><button onclick="A.save(1)">Сохранить в слот 1</button><button onclick="A.save(2)">Слот 2</button><button onclick="A.save(3)">Слот 3</button></div><div class="row"><button onclick="A.load(1)">Загрузить 1</button><button onclick="A.load(2)">2</button><button onclick="A.load(3)">3</button></div><div class="row"><button onclick="A.snd()">Звук: ${SND?'вкл':'выкл'}</button><button onclick="A.toMenu()">В главное меню</button></div><div class="mu">Автосохранение — раз в месяц игрового времени.</div>`}};
+const DIP={war:{n:'Объявить войну',ok:(a,b)=>!atWar(a,b)&&!allied(a,b),run:(a,b)=>declare(a,b)},
+ peace:{n:'Предложить мир',ok:atWar,run:(a,b)=>aiOK(b,a)?makePeace(a,b):nt('Отказ: '+nameOf(b)+' хочет продолжать войну','w')},
+ ally:{n:'Создать альянс / пригласить',c:50,ok:(a,b)=>!allied(a,b)&&!atWar(a,b),run:(a,b)=>{const e=makeAlliance(a,b);if(e)nt(e,'w')}},
+ improve:{n:'Улучшить отношения',c:25,ok:(a,b)=>!atWar(a,b),run:(a,b)=>{G.c[a].rel[b]+=15;G.c[b].rel[a]+=15}},
+ worsen:{n:'Ухудшить отношения',c:10,ok:(a,b)=>!allied(a,b),run:(a,b)=>{G.c[a].rel[b]-=15;G.c[b].rel[a]-=15}},
+ trade:{n:'Торговое соглашение',c:30,ok:(a,b)=>!atWar(a,b)&&!G.c[a].trade.includes(b),run:(a,b)=>{if(G.c[b].rel[a]<-10)return nt('Отказ: плохие отношения','w');G.c[a].trade.push(b);G.c[b].trade.push(a);nt('Торговое соглашение с '+nameOf(b),'g')}},
+ aid:{n:'Военная помощь (−10 пех. об.)',ok:(a,b)=>!atWar(a,b),run:(a,b)=>{if(G.c[a].eq.inf<10)return nt('Недостаточно оборудования','w');G.c[a].eq.inf-=10;G.c[b].eq.inf+=10;G.c[b].rel[a]+=10}}};
+function refreshAll(){if(!G)return;G.c.forEach(c=>c.alive&&0);dirty=1}
+/* ================= ДЕЙСТВИЯ ================= */
+const A={
+ newGame(){MODE='select';SELC=null;newState();paint();calcLabels();$('#menu').classList.add('hide');$('#card').classList.remove('hide');card();dirty=1},
+ start(){G.pi=SELC;G.c[G.pi].ai=false;G.paused=true;MODE='game';$('#card').classList.add('hide');['#top','#nav'].forEach(s=>$(s).classList.remove('hide'));G.tab='country';G.sel=CAP[G.pi];nt('Игра началась. Нажмите ▶, чтобы запустить время','g');ui();dirty=1},
+ pause(){G.paused=!G.paused;sfx('click');ui()},speed(n){G.speed=n;G.paused=false;ui()},
+ tab(t){G.tab=G.tab===t?null:t;sfx('open');ui()},sel(p){G.sel=p;G.sa=null;ui();dirty=1},
+ selA(id,s){G.sa=G.sa===id?null:id;if(s){const a=G.armies.find(x=>x.id===id);if(a)G.sel=a.p}ui();dirty=1},
+ law(k,i){const c=me();if(c.laws[k]===i)return;if(c.pp<100)return nt('Нужно 100 ПВ','w');c.pp-=100;c.laws[k]=i;calc(c);ui()},
+ line(k,d){const c=me(),used=Object.values(c.lines).reduce((s,v)=>s+v,0);if(d>0&&used>=c.mf)return;if(d<0&&c.lines[k]<=0)return;c.lines[k]+=d;ui()},
+ train(k){const e=startTrain(me(),k);if(e)nt(e,'w');ui()},
+ build(t){const e=queueBuild(me(),G.sel,t);if(e)nt(e,'w');else sfx('click');ui()},unq(i){me().buildQ.splice(i,1);ui()},
+ front(m){const c=me();if(m===0)aiArmies(c);else G.armies.filter(a=>a.o===G.pi).forEach(a=>a.tgt=null);ui();dirty=1},
+ research(id){const c=me(),t=CFG.techs.find(x=>x.id===id);c.rs.push({id,left:t.d});sfx('click');ui()},
+ focus(id){const c=me(),f=focusesOf(c).find(x=>x.id===id);if(!f||c.focus||c.fdone.includes(id)||!reqOK(c,f))return;c.focus={id,left:f.d};nt('Начат фокус: '+f.n);sfx('click');ui()},
+ fsel(id){G.fsel=id;ui()},
+ dtab(i){G.dt=i;G.tab='dip';ui()},
+ dip(k){const d=DIP[k],c=me();if(d.c&&c.pp<d.c)return nt('Нужно '+d.c+' ПВ','w');if(d.c)c.pp-=d.c;d.run(G.pi,G.dt);ui();dirty=1},
+ leave(){leave(G.pi);ui()},snd(){SND=!SND;ui()},
+ save(s){save(s);nt('Игра сохранена (слот '+s+')','g');ui()},
+ load(s){if(load(s))nt('Игра загружена','g')},
+ cont(){if(!load('auto')){const k=[1,2,3].find(i=>localStorage.getItem('golub_'+i));if(!k||!load(k))nt('Нет сохранений','w')}},
+ loadMenu(){ask('Загрузка',' ',[1,2,3,'auto'].map(s=>[(s==='auto'?'Автосохранение':'Слот '+s)+(info(s)?' — '+info(s):' — пусто'),()=>{if(!load(s))nt('Пусто','w')}]).concat([['Назад',()=>{}]]))},
+ settings(){ask('Настройки','Звук: '+(SND?'включён':'выключен'),[['Переключить звук',()=>{SND=!SND}],['Закрыть',()=>{}]])},
+ about(){ask('Голубиновка: Последний рубеж','Прототип глобальной стратегии. Карта — ваша: 21 территория, провинции строятся по жёлтым городам. Данные стран, лор и баланс меняются в блоке CFG в начале скрипта.',[['Понятно',()=>{}]])},
+ toMenu(){MODE='menu';G.modal=0;['#top','#nav','#panel','#pinfo','#card'].forEach(s=>$(s).classList.add('hide'));$('#menu').classList.remove('hide');$('#modal').classList.add('hide');dirty=1}};
+function card(){const c=SELC==null?null:G.c[SELC],cd=$('#card');if(!c){cd.innerHTML='<h2>Выбор страны</h2><div class="mu">Кликните по любой стране на карте</div><div class="row"><button onclick="A.toMenu()">Назад</button></div>';return}
+ const o=own(SELC),f=fac(c),pop=o.reduce((s,p)=>s+p.pop,0),cap=P[CAP[SELC]];
+ cd.innerHTML=`<h2>${flag(SELC)}${c.name}</h2><div class="mu">Глава: ${CFG.leader(SELC)} · ${CFG.ideology(SELC)}</div><table><tr><td>Столица</td><td>${cap.city?cityName(cap):'провинция '+(cap.id+1)}</td></tr><tr><td>Провинций</td><td>${o.length}</td></tr><tr><td>Население</td><td>${fmt(pop)}</td></tr><tr><td>Промышленность</td><td>${f.cf} гражд. / ${f.mf} воен.</td></tr><tr><td>Армия</td><td>${G.armies.filter(a=>a.o===SELC).reduce((s,a)=>s+str(a),0)} див.</td></tr><tr><td>Соседи</td><td>${nbrs(c).length}</td></tr><tr><td>Экономика</td><td>${'★'.repeat(Math.max(1,Math.min(5,Math.round(f.cf/4))))}</td></tr></table><div class="row"><button class="pri" onclick="A.start()">Начать игру</button><button onclick="A.toMenu()">Назад</button></div>`}
+/* ================= СОХРАНЕНИЕ ================= */
+function save(s){try{localStorage.setItem('golub_'+s,JSON.stringify({t:Date.now(),G,pv:P.map(p=>[p.o,p.civ,p.mil,p.dock,p.inf,p.fort,p.air,p.pop])}))}catch(e){}}
+function info(s){try{const d=JSON.parse(localStorage.getItem('golub_'+s));return d?new Date(d.t).toLocaleString('ru'):''}catch(e){return''}}
+function load(s){try{const d=JSON.parse(localStorage.getItem('golub_'+s));if(!d)return false;G=d.G;G.modal=0;G.paused=true;P.forEach((p,i)=>[p.o,p.civ,p.mil,p.dock,p.inf,p.fort,p.air,p.pop]=d.pv[i]);G.c.forEach(calc);MODE='game';$('#menu').classList.add('hide');$('#card').classList.add('hide');$('#modal').classList.add('hide');['#top','#nav'].forEach(x=>$(x).classList.remove('hide'));paint();calcLabels();ui();dirty=1;return true}catch(e){return false}}
+/* ================= ЗАПУСК ================= */
+const img=new Image();img.onload=()=>{buildMap(img);fit();newState();paint();calcLabels();requestAnimationFrame(loop)};img.src='data:image/png;base64,'+M.png;
+addEventListener('keydown',e=>{if(MODE!=='game'||G.modal)return;if(e.code==='Space'){e.preventDefault();A.pause()}else if(e.key>='1'&&e.key<='5')A.speed(+e.key)});
+</script></body></html>
